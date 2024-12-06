@@ -1,0 +1,3 @@
+// This contains modified version (severely cut-down with many platforms and options removed) of SDL3
+// For the original version please visit:
+// https://github.com/libsdl-org/SDL/
