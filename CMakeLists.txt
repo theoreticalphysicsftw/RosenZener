@@ -12,11 +12,15 @@ file(
         GLOB
         RZ_SOURCES
         "${RZ_SOURCE_DIR}/*.cpp"
+        "${RZ_SOURCE_DIR}/OS/*.cpp"
+        "${RZ_SOURCE_DIR}/GUI/*.cpp"
+        "${RZ_SOURCE_DIR}/Common/*.cpp"
     )
     
 add_executable(${PROJECT_NAME} "${RZ_SOURCES}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_SOURCE_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_EXTERN_DIR}")
+target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_EXTERN_DIR}/SDL/include/")
 
 add_subdirectory("${RZ_EXTERN_DIR}/OpenUSD")
 add_subdirectory("${RZ_EXTERN_DIR}/ImGUI")
