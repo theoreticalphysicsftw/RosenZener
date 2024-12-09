@@ -30,11 +30,13 @@ class GUI
 {
 public:
 	static auto Init() -> Bool;
+	static auto Destroy() -> Void;
+
+private:
 	static auto ProcessInput(const Window::Event& e) -> Bool;
 	static auto AccumulateGUICommands() -> Void;
 	static auto PrepareRenderingData() -> Void;
 	static auto Render() -> Void;
-	static auto Destroy() -> Void;
-
-private:
+    
+    friend class Window;
 };

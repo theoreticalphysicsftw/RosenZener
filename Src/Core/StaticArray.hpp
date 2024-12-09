@@ -23,14 +23,35 @@
 
 #pragma once
 
-#include <OpenUSD/pxr/base/vt/array.h>
+#include <Core/Primitives.hpp>
+#include <Core/Concepts.hpp>
 
-#include <functional>
+template <typename T, U32 TSize>
+struct StaticArray
+{
+    StaticArray() = default;
 
-template <typename T>
-using Array = VtArray<T>;
+    template <typename... TArgs>
+        requires CAllAreConstructibleFrom<T, TArgs...>
+    StaticArray(TArgs... args) :
+        data{static_cast<T>(args)...}
+    {
+    }
 
-template <typename TR, typename... TArgs>
-using Function = std::function<TR(TArgs...)>;
+    constexpr U32 getSize() const
+    {
+        return TSize;
+    }
 
+    constexpr T& operator[](U32 i)
+    {
+        return data[i];
+    }
 
+    constexpr const T& operator[](U32 i) const
+    {
+        return data[i];
+    }
+
+    T data[TSize];
+};

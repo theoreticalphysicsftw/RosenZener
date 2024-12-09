@@ -23,14 +23,24 @@
 
 #pragma once
 
-#include <OpenUSD/pxr/base/vt/array.h>
+#define DEFINE_COMPONENT_WISE_OPERATOR(CLASS, COMPONENTS, OP) \
+    CLASS operator OP (const CLASS& other) const \
+    { \
+        CLASS result; \
+        for (auto i = 0u; i < COMPONENTS; ++i) \
+        { \
+            result.data[i] = this->data[i] OP other.data[i]; \
+        } \
+        return result; \
+    }
 
-#include <functional>
-
-template <typename T>
-using Array = VtArray<T>;
-
-template <typename TR, typename... TArgs>
-using Function = std::function<TR(TArgs...)>;
-
-
+#define DEFINE_COMPONENT_WISE_OPERATOR_SCALAR(CLASS, COMPONENTS, OP) const \
+    CLASS operator OP (T scalar) \
+    { \
+        CLASS result; \
+        for (auto i = 0u; i < COMPONENTS; ++i) \
+        { \
+            result.data[i] = this->data[i] OP scalar; \
+        } \
+        return result; \
+    }
