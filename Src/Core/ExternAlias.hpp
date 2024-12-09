@@ -24,13 +24,20 @@
 #pragma once
 
 #include <OpenUSD/pxr/base/vt/array.h>
-
+#include <OpenUSD/pxr/base/tf/refPtr.h>
 #include <functional>
 
 template <typename T>
 using Array = VtArray<T>;
 
-template <typename TR, typename... TArgs>
-using Function = std::function<TR(TArgs...)>;
+template <typename T>
+using Function = std::function<T>;
 
+template<typename TF, typename... TArgs >
+using InvokeResult = std::invoke_result_t<TF, TArgs...>;
 
+template <typename TF, typename... TArgs>
+constexpr auto& Invoke = std::invoke<TF, TArgs...>;
+
+template <typename T>
+using RefPtr = TfRefPtr<T>;
