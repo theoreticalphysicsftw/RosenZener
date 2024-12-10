@@ -73,7 +73,7 @@ inline ThreadPool<TTask>::ThreadPool(U32 numberOfThreads) :
 {
     for (auto i = 0u; i < numberOfThreads; ++i)
     {
-        threads.emplace_back
+        threads.EmplaceBack
         (
             [&]()
             {
@@ -84,10 +84,10 @@ inline ThreadPool<TTask>::ThreadPool(U32 numberOfThreads) :
                     {
                         break;
                     }
-                    queueMutex.lock();
+                    queueMutex.Lock();
                     auto front = queue.front();
-                    queue.pop_front();
-                    queueMutex.unlock();
+                    queue.PopFront();
+                    queueMutex.Unlock();
 
                     Invoke<Task>(Move(front));
                 }
@@ -100,14 +100,14 @@ inline ThreadPool<TTask>::ThreadPool(U32 numberOfThreads) :
 template<typename TTask>
 inline auto ThreadPool<TTask>::GetMaxTasks() -> U32
 {
-    return threads.size();
+    return threads.GetSize();
 }
 
 template<typename TTask>
 inline auto ThreadPool<TTask>::ShutDown() -> Void
 {
     keepRunning = false;
-    availableTasks.release(threads.size());
+    availableTasks.Release(threads.GetSize());
 }
 
 
@@ -119,10 +119,10 @@ inline auto ThreadPool<TTask>::AddTask(TFunc f, TArgs... args) -> TaskResult<Inv
     
     TaskResult<Result> result;
 
-    queueMutex.lock();
+    queueMutex.Lock();
     auto promise = RefPtr(new Promise<Result>);
-    result.future = promise->get_future();
-    queue.emplace_back
+    result.future = promise->GetFuture();
+    queue.EmplaceBack
     (
         [promiseL = promise, fL = Move(f), ... argsL = Move(args)]()
         {
@@ -137,7 +137,7 @@ inline auto ThreadPool<TTask>::AddTask(TFunc f, TArgs... args) -> TaskResult<Inv
             }
         }
     );
-    queueMutex.unlock();
-    availableTasks.release();
+    queueMutex.Unlock();
+    availableTasks.Release();
     return result;
 }

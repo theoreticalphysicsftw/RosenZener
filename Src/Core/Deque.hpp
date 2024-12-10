@@ -32,4 +32,15 @@ struct Deque : std::deque<T>
     {
         push_back(v);
     }
+
+    template <typename... TArgs>
+    Void EmplaceBack(TArgs&&... args)
+    {
+        emplace_back<TArgs...>(args...);
+    }
+
+    U64 GetSize()
+    {
+        return std::deque<T>::size();
+    }
 };
