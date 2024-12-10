@@ -23,30 +23,22 @@
 
 #pragma once
 
-#include <OpenUSD/pxr/base/vt/array.h>
-#include <OpenUSD/pxr/base/tf/refPtr.h>
+#include <Core/ExternAlias.hpp>
 
-#include <functional>
-#include <initializer_list>
-#include <utility>
+#include <span>
+
 
 template <typename T>
-using Array = VtArray<T>;
+struct Span : std::span<T>
+{
+    template <typename TIt>
+    constexpr Span(TIt first, U64 count) :
+        std::span<T>(first, count)
+    {
+    }
 
-template <typename T>
-using Function = std::function<T>;
-
-template<typename TF, typename... TArgs >
-using InvokeResult = std::invoke_result_t<TF, TArgs...>;
-
-template <typename TF, typename... TArgs>
-constexpr auto& Invoke = std::invoke<TF, TArgs...>;
-
-template <typename T>
-using RefPtr = TfRefPtr<T>;
-
-template <typename T>
-using InitializerList = std::initializer_list<T>;
-
-template <typename T0, typename T1>
-using Pair = std::pair<T0, T1>;
+    constexpr Span(InitializerList<T> iList) :
+        std::span<T>(iList)
+    {
+    }
+};
