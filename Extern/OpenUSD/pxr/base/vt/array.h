@@ -1,3 +1,6 @@
+// Modified from the original OpenUSD file.
+// Copyright 2024 Mihail Mladenov
+
 //
 // Copyright 2016 Pixar
 //
@@ -435,6 +438,10 @@ class VtArray : public Vt_ArrayBase {
         ++_shapeData.totalSize;
     }
 
+    template <typename... Args>
+    void EmplaceBack(Args&&... args) {
+        return emplace_back<Args...>(args...);
+    }
     /// Appends an element at the end of the array. The underlying data
     /// is first copied if it is not uniquely owned.
     ///
@@ -470,6 +477,7 @@ class VtArray : public Vt_ArrayBase {
 
     /// Return the total number of elements in this array.
     size_t size() const { return _shapeData.totalSize; }
+    size_t GetSize() const { return size(); }
 
     /// Return the number of items this container can grow to hold without
     /// triggering a (re)allocation.  Note that if the underlying data is not
