@@ -154,3 +154,4 @@ auto operator==(const Vector<TF, N>& v0, const Vector<TF, N>& v1) -> Bool
 
 using Vector2 = Vector<F32, 2>;
 using Vector3 = Vector<F32, 3>;
+using Vector4 = Vector<F32, 4>;
