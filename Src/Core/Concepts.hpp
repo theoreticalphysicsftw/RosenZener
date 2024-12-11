@@ -64,3 +64,6 @@ concept CSizeAtLeast = SizeAtLeast<T, U>::value;
 
 template <typename T, typename U>
 concept CSizeAtMost = CSizeAtLeast<U, T>;
+
+template <typename TF, typename... TArgs>
+concept CInvocable = std::invocable<TF, TArgs...>;
