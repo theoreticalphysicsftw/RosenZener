@@ -407,6 +407,9 @@ class VtArray : public Vt_ArrayBase {
     /// Return a const pointer to the data held by this array.
     const_pointer cdata() const { return _data; }
 
+    pointer GetData() { return data(); }
+    const_pointer GetData() const { return data(); }
+
     /// Initializes a new element at the end of the array. The underlying data
     /// is first copied if it is not uniquely owned.
     ///
