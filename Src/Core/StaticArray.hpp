@@ -38,7 +38,7 @@ struct StaticArray
     {
     }
 
-    constexpr U32 getSize() const
+    constexpr U32 GetSize() const
     {
         return TSize;
     }

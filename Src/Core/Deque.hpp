@@ -30,13 +30,18 @@ struct Deque : std::deque<T>
 {
     Void PushBack(const T& v)
     {
-        push_back(v);
+        std::deque<T>::push_back(v);
+    }
+
+    Void PopFront()
+    {
+        std::deque<T>::pop_front();
     }
 
     template <typename... TArgs>
     Void EmplaceBack(TArgs&&... args)
     {
-        emplace_back<TArgs...>(args...);
+        std::deque<T>::template emplace_back<TArgs...>(Forward<TArgs>(args)...);
     }
 
     U64 GetSize()
