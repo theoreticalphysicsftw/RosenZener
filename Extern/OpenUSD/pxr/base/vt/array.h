@@ -443,7 +443,7 @@ class VtArray : public Vt_ArrayBase {
 
     template <typename... Args>
     void EmplaceBack(Args&&... args) {
-        return emplace_back<Args...>(args...);
+        emplace_back(std::forward<Args>(args)...);
     }
     /// Appends an element at the end of the array. The underlying data
     /// is first copied if it is not uniquely owned.
