@@ -30,6 +30,7 @@
 #include <Core/Concepts.hpp>
 
 #include <Core/StaticArray.hpp>
+#include <Core/Array.hpp>
 #include <Core/Span.hpp>
 #include <Core/Deque.hpp>
 
