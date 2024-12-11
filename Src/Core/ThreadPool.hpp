@@ -43,20 +43,20 @@ class ThreadPool
 public:
     using Task = TTask;
 
-    ThreadPool(U32 numberOfThreads = GetLogicalCPUCount());
+    static auto Init(U32 numberOfThreads = GetLogicalCPUCount()) -> Void;
 
     template <typename TFunc, typename... TArgs>
-    auto AddTask(TFunc f, TArgs... args) -> TaskResult<InvokeResult<TFunc, TArgs...>>;
+    static auto AddTask(TFunc f, TArgs... args) -> TaskResult<InvokeResult<TFunc, TArgs...>>;
 
-    auto GetMaxTasks() -> U32;
-    auto ShutDown() -> Void;
+    static auto GetMaxTasks() -> U32;
+    static auto ShutDown() -> Void;
 
 private:
-    Atomic<Bool> keepRunning = true;
-    Mutex queueMutex;
-    Deque<Task> queue;
-    Array<Thread> threads;
-    Semaphore availableTasks;
+    inline static Atomic<Bool> keepRunning = true;
+    inline static Mutex queueMutex;
+    inline static Deque<Task> queue;
+    inline static Array<Thread> threads;
+    inline static Semaphore availableTasks = Semaphore(0);
 };
 
 
@@ -68,8 +68,7 @@ inline auto TaskResult<T>::Retrieve() -> T
 
 
 template<typename TTask>
-inline ThreadPool<TTask>::ThreadPool(U32 numberOfThreads) :
-    availableTasks(0)
+inline auto ThreadPool<TTask>::Init(U32 numberOfThreads) -> Void
 {
     for (auto i = 0u; i < numberOfThreads; ++i)
     {
@@ -120,7 +119,7 @@ inline auto ThreadPool<TTask>::AddTask(TFunc f, TArgs... args) -> TaskResult<Inv
     TaskResult<Result> result;
 
     queueMutex.Lock();
-    auto promise = RefPtr(new Promise<Result>);
+    auto promise = RefPtr<Promise<Result>>(new Promise<Result>);
     result.future = promise->GetFuture();
     queue.EmplaceBack
     (
@@ -141,3 +140,6 @@ inline auto ThreadPool<TTask>::AddTask(TFunc f, TArgs... args) -> TaskResult<Inv
     availableTasks.Release();
     return result;
 }
+
+
+using GThreadPool = ThreadPool<>;

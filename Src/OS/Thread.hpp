@@ -26,6 +26,7 @@
 #include <Core/Primitives.hpp>
 #include <Core/ExternAlias.hpp>
 #include <Core/TypeTraits.hpp>
+#include <Core/Concepts.hpp>
 
 #include <thread>
 #include <future>
@@ -44,8 +45,9 @@ struct Thread : std::jthread
     }
 
     template<class TF, class... TArgs >
-    explicit Thread(TF&& f, TArgs&&... args ) :
-        std::jthread(f, args...)
+        requires CInvocable<TF, TArgs...>
+    Thread(TF&& f, TArgs&&... args ) :
+        std::jthread(Forward<TF>(f), Forward<TArgs>(args)...)
     {
     }
 
@@ -70,9 +72,15 @@ struct Thread : std::jthread
 template <typename T>
 struct Atomic : std::atomic<T>
 {
+    Atomic(const T& a) :
+        std::atomic<T>(a)
+    {
+    }
+
     Atomic& operator=(const T& a)
     {
-        return std::atomic<T>::operator=(a);
+        std::atomic<T>::operator=(a);
+        return *this;
     }
 };
 
