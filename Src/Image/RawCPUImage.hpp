@@ -85,7 +85,7 @@ struct RawCPUImage
     template <typename T>
     auto Clear(T clearValue, ThreadPool<>& threadPool) -> Void;
 
-    auto CopyToLockedTextureRGBA8(LockedTexture* tex) -> Void
+    auto CopyToLockedTextureRGBA8(LockedTexture& tex) const -> Void
     {
         if (lebesgueOrdered)
         {
@@ -98,16 +98,16 @@ struct RawCPUImage
     }
 
 private:
-    auto CopyLebesgueToLockedTextureRGBA8(LockedTexture* tex) -> Void
+    auto CopyLebesgueToLockedTextureRGBA8(LockedTexture& tex) const-> Void
     {
-        auto texU32Ptr = reinterpret_cast<ColorU32*>(tex->data);
-        auto srcU32Ptr = reinterpret_cast<ColorU32*>(data.GetData());
+        auto texU32Ptr = reinterpret_cast<ColorU32*>(tex.data);
+        auto srcU32Ptr = reinterpret_cast<const ColorU32*>(data.GetData());
         for (auto i = 0u; i < height; ++i)
         {
             for (auto j = 0u; j < width; ++i)
             {
                 auto idx = LebesgueCurve(j, i);
-                texU32Ptr[i * tex->stride / 4 + j] = srcU32Ptr[idx]; 
+                texU32Ptr[i * tex.stride / 4 + j] = srcU32Ptr[idx]; 
             }
         }
     }
