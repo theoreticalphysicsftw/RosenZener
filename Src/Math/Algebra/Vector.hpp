@@ -151,6 +151,21 @@ auto operator==(const Vector<TF, N>& v0, const Vector<TF, N>& v1) -> Bool
     return v0.data == v1.data;
 }
 
+template <typename TF, U32 N>
+inline auto RemapToRange
+(
+    const Vector<TF, N>& v,
+    const Vector<TF, N>& inRangeMin,
+    const Vector<TF, N>& inRangeMax,
+    const Vector<TF, N>& outRangeMin,
+    const Vector<TF, N>& outRangeMax
+) -> Vector<TF, N>
+{
+    auto inDelta = inRangeMax - inRangeMin;
+    auto outDelta = outRangeMax - outRangeMin;
+    return outRangeMax + inDelta / outDelta * v; 
+}
+
 
 using Vector2 = Vector<F32, 2>;
 using Vector3 = Vector<F32, 3>;
