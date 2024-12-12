@@ -92,6 +92,7 @@ auto Window::Loop() -> Void
         ProcessInput();
 
         SDL_RenderClear(renderer);
+        DrawAfterClear();
         GUI::AccumulateGUICommands();
         GUI::PrepareRenderingData();
         GUI::Render();
@@ -104,6 +105,28 @@ auto Window::Destroy() -> Void
 {
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+
+auto Window::DrawAfterClear() -> Void
+{
+    LockedTexture lockedTex;
+    lockedTex.width = width;
+    lockedTex.height = height;
+    if (toDrawAfterClear)
+    {
+        SDL_LockTexture(screenTarget, nullptr, (Void**)&lockedTex.data, &lockedTex.stride);
+        toDrawAfterClear->CopyToLockedTextureRGBA8(lockedTex);
+        SDL_UnlockTexture(screenTarget);
+        SDL_RenderTexture(renderer, screenTarget, nullptr, nullptr);
+        toDrawAfterClear = nullptr;
+    }
+}
+
+
+auto Window::AddToDrawAfterClear(const RawCPUImage& imgRGBA8) -> Void
+{
+    toDrawAfterClear = &imgRGBA8;
 }
 
 

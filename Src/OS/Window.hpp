@@ -26,6 +26,8 @@
 #define SDL_MAIN_HANDLED
 #include <SDL3/SDL.h>
 #include <Core.hpp>
+#include <Core/ExternAlias.hpp>
+#include <Image/RawCPUImage.hpp>
 
 
 class Window
@@ -34,15 +36,24 @@ public:
 	using Event = SDL_Event;
 
 	static auto Init(const Char* name, U32 width, U32 height, Bool vSyncEnabled) -> Bool;
-	static auto ProcessInput() -> Void;
 	static auto Loop() -> Void;
 	static auto Destroy() -> Void;
-	static auto ApplyVSyncSetting() -> Void;
-private:
-	inline static SDL_Window* window = nullptr;
-    inline static SDL_Renderer* renderer = nullptr;
+    
+    static auto AddToDrawAfterClear(const RawCPUImage& imgRGBA8) -> Void;
+
 	inline static U32 width = 0;
 	inline static U32 height = 0;
+private:
+	static auto ProcessInput() -> Void;
+	static auto ApplyVSyncSetting() -> Void;
+    static auto DrawAfterClear() -> Void;
+
+	inline static SDL_Window* window = nullptr;
+    inline static SDL_Renderer* renderer = nullptr;
+    inline static SDL_Texture* screenTarget = nullptr;
+
+    inline static const RawCPUImage* toDrawAfterClear = nullptr;
+
 	inline static Bool isClosed = true;
 	inline static Bool isVSyncOn = true;
 
