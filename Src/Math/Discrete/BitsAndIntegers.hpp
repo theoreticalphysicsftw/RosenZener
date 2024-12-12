@@ -37,7 +37,7 @@ inline auto RoundToPowerOfTwo(U32 x) -> U32
     return x;
 }
 
-auto InterleaveBits(U16 n) -> U32
+inline auto InterleaveBits(U16 n) -> U32
 {
     U32 n32 = n;
     n32 = (n32 | (n32 << 8)) & 0b00000000111111110000000011111111u;
@@ -47,7 +47,7 @@ auto InterleaveBits(U16 n) -> U32
     return n32;
 }
 
-auto DeinterleaveBits(U32 n) -> U16
+inline auto DeinterleaveBits(U32 n) -> U16
 {
     n = (n | (n >> 1)) & 0b00110011001100110011001100110011u;
     n = (n | (n >> 2)) & 0b00001111000011110000111100001111u;
