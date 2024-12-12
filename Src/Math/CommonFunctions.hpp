@@ -23,6 +23,17 @@
 
 #pragma once
 
-#include <Math/Algebra/Vector.hpp>
-#include <Math/Algebra/Matrix.hpp>
-#include <Math/Algebra/Complex.hpp>
+#include <cmath>
+
+
+template <typename T>
+inline auto Sech(const T& x)
+{
+    return T(1) / std::cosh(x);
+}
+
+template <typename T>
+inline auto Tanh(const T& x)
+{
+    return std::tanh(x);
+}

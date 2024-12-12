@@ -23,6 +23,19 @@
 
 #pragma once
 
-#include <Math/Algebra/Vector.hpp>
-#include <Math/Algebra/Matrix.hpp>
-#include <Math/Algebra/Complex.hpp>
+#include <complex>
+
+template <typename T>
+using Complex = std::complex<T>;
+
+template <typename T>
+inline constexpr auto GetReal(const Complex<T>& c) -> T
+{
+    return c.real();
+}
+
+template <typename T>
+inline constexpr auto GetImag(const Complex<T>& c) -> T
+{
+    return c.imag();
+}
