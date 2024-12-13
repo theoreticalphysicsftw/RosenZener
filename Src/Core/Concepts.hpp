@@ -47,6 +47,9 @@
 #include <concepts>
 #include <type_traits>
 
+template <typename T0, typename T1>
+concept CIsConstructibleFrom = std::constructible_from<T1, T0>;
+
 template <typename T, typename... Ts>
 concept CAllAreConstructibleFrom = (std::constructible_from<Ts, T> && ...); 
 
