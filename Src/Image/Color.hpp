@@ -132,7 +132,7 @@ inline auto RGBAToYCbCrABT601(ColorU32 rgba) -> ColorU32
 }
 
 
-auto YUVAToRGBA(ColorU32 yuva) -> ColorU32
+inline auto YUVAToRGBA(ColorU32 yuva) -> ColorU32
 {
     ColorU32 rgba;
     rgba.r = GetClampedU8(yuva.y + 1.1398f * yuva.v);
@@ -143,7 +143,7 @@ auto YUVAToRGBA(ColorU32 yuva) -> ColorU32
 }
 
 
-auto RGBAToYUVA(ColorU32 rgba) -> ColorU32
+inline auto RGBAToYUVA(ColorU32 rgba) -> ColorU32
 {
     ColorU32 yuva;
     yuva.y = GetClampedU8(0.299f * rgba.r + 0.587f * rgba.g + 0.114f * rgba.b);
@@ -154,7 +154,16 @@ auto RGBAToYUVA(ColorU32 rgba) -> ColorU32
 }
 
 
-auto RGBAToGrayscale(ColorU32 c) -> U8
+inline auto RGBAToGrayscale(ColorU32 c) -> U8
 {
     return GetClampedU8(0.299f * c.r + 0.587 * c.g + 0.114 * c.b) * (c.a / 255.f);
+}
+
+
+inline auto BlendColor(const Color4& fg, const Color4& bg) -> Color4
+{
+    auto alpha = fg[3];
+    auto result = bg * (1.- alpha) + fg * alpha;
+    result[3] = 1;
+    return result;
 }
