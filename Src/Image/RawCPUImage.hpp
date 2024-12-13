@@ -97,6 +97,11 @@ struct RawCPUImage
         }
     }
 
+    auto AreCoordsValid(const Vector<U32, 2>& c) -> Bool
+    {
+        return c[0] < width && c[1] < height;
+    }
+
 private:
     auto CopyLebesgueToLockedTextureRGBA8(LockedTexture& tex) const-> Void
     {
