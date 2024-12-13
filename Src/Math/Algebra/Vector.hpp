@@ -26,6 +26,7 @@
 #include <Core/Primitives.hpp>
 #include <Core/Concepts.hpp>
 #include <Core/StaticArray.hpp>
+#include <Math/CommonFunctions.hpp>
 #include <Math/Algebra/VectorCommon.hpp>
 
 
@@ -36,6 +37,16 @@ struct Vector
 
     T& operator[](U32 n) { return data[n]; }
     const T& operator[](U32 n) const { return data[n]; }
+
+    template <typename TOther>
+        requires CIsConstructibleFrom<T, TOther>
+    Vector(const Vector<TOther, N>& other)
+    {
+        for (auto i = 0u; i < N; ++i)
+        {
+            data[i] = other[i];
+        }
+    }
 
     template <typename... Ts>
         requires CAllAreConstructibleFrom<T, Ts...>
