@@ -25,15 +25,33 @@
 
 #include <cmath>
 
+template <typename T>
+inline auto Sin(const T& x) -> T
+{
+    return std::sin(x);
+}
 
 template <typename T>
-inline auto Sech(const T& x)
+inline auto Sech(const T& x) -> T
 {
     return T(1) / std::cosh(x);
 }
 
 template <typename T>
-inline auto Tanh(const T& x)
+inline auto Tanh(const T& x) -> T
 {
     return std::tanh(x);
 }
+
+template <typename T>
+inline auto Ceil(const T& x) -> T
+{
+    return std::ceil(x);
+}
+
+template <typename T>
+inline auto Sqrt(const T& x) -> T
+{
+    return std::sqrt(x);
+}
+
