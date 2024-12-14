@@ -23,12 +23,10 @@
 
 #pragma once
 
-#include <OpenUSD/pxr/base/vt/array.h>
-#include <OpenUSD/pxr/base/tf/refPtr.h>
-
 #include <functional>
 #include <initializer_list>
 #include <utility>
+#include <memory>
 
 template <typename T>
 using Function = std::function<T>;
@@ -40,7 +38,7 @@ template <typename TF, typename... TArgs>
 constexpr auto& Invoke = std::invoke<TF, TArgs...>;
 
 template <typename T>
-using RefPtr = TfRefPtr<T>;
+using RefPtr = std::shared_ptr<T>;
 
 template <typename T>
 using InitializerList = std::initializer_list<T>;

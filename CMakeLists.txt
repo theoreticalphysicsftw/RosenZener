@@ -22,10 +22,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_SOURCE_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_EXTERN_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_EXTERN_DIR}/SDL/include/")
 
-add_subdirectory("${RZ_EXTERN_DIR}/OpenUSD")
+add_compile_definitions("NOMINMAX")
+
 add_subdirectory("${RZ_EXTERN_DIR}/ImGUI")
 add_subdirectory("${RZ_EXTERN_DIR}/SDL")
 
 target_link_libraries(${PROJECT_NAME} ImGUI)
-target_link_libraries(${PROJECT_NAME} OpenUSD)
 target_link_libraries(${PROJECT_NAME} SDLStatic)
