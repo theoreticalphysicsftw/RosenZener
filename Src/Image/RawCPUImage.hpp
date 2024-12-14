@@ -109,7 +109,7 @@ private:
         auto srcU32Ptr = reinterpret_cast<const ColorU32*>(data.GetData());
         for (auto i = 0u; i < height; ++i)
         {
-            for (auto j = 0u; j < width; ++i)
+            for (auto j = 0u; j < width; ++j)
             {
                 auto idx = LebesgueCurve(j, i);
                 texU32Ptr[i * tex.stride / 4 + j] = srcU32Ptr[idx]; 
