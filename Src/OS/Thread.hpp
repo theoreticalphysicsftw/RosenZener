@@ -31,6 +31,7 @@
 #include <thread>
 #include <future>
 #include <atomic>
+#include <semaphore>
 
 struct Thread : std::jthread
 {
