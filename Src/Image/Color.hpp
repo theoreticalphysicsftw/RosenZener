@@ -163,7 +163,7 @@ inline auto RGBAToGrayscale(ColorU32 c) -> U8
 inline auto BlendColor(const Color4& fg, const Color4& bg) -> Color4
 {
     auto alpha = fg[3];
-    auto result = bg * (1.- alpha) + fg * alpha;
+    auto result = bg * (1 - alpha) + fg * alpha;
     result[3] = 1;
     return result;
 }
