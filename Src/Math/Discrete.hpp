@@ -45,7 +45,7 @@ auto Max(const T& i0, const T& i1) -> T
 template <typename T>
 auto Clamp(const T& i, const T& r0, const T& r1) -> T
 {
-    return Max(Min(i, r0), r1);
+    return Min(Max(i, r0), r1);
 }
 
 
