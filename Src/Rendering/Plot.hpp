@@ -43,6 +43,6 @@ inline auto DiscretePointPlot2D
 )
 {
     Vector<T, 2> f(argVal, fVal);
-    auto projected = RemapToRange(f, drawRangeMin, drawRangeMax, fRangeMin, fRangeMax);
+    auto projected = RemapToRange(f, fRangeMin, fRangeMax, drawRangeMin, drawRangeMax);
     DrawPoint(dest, projected, color, radiusPixel);
 }
