@@ -30,23 +30,27 @@
 
 inline auto DrawPoint(RawCPUImage& dest, Vector2 normCoords, const Color4& color, F32 pixelSize) -> Void
 {
+    static constexpr F32 feather = 2.f;
     auto surfCoords = dest.ToSurfaceCoordinates(normCoords);
-    auto radius = Ceil(pixelSize / 2) + 1;
-    auto diameter = 2 * radius;
+    auto radius = pixelSize / 2 + 1;
+    auto diameter = 2 * (radius + feather);
 
     ColorU32* surfData = (ColorU32*)dest.data.GetData();
     for (auto i = 0u; i < diameter; ++i)
     {
-        auto pix = surfCoords + i - radius;
-        auto uPix = Vector<U32, 2>(pix);
-        if (dest.AreCoordsValid(uPix))
+        for (auto j = 0u; j < diameter; ++j)
         {
-            auto idx = LebesgueCurve(uPix[0], uPix[1]); 
-            auto dist = Distance(surfCoords, pix);
-            auto alpha = 1.f - SmoothStep(0.f, 2.f, dist);
-            auto currentColor = color;
-            currentColor[3] *= alpha;
-            surfData[idx] = BlendColor(currentColor, surfData[idx]);
+            auto pix = Floor(surfCoords + Vector2(i, j) - diameter / 2) + 0.5f;
+            auto uPix = Vector<U32, 2>(pix);
+            if (dest.AreCoordsValid(uPix))
+            {
+                auto idx = LebesgueCurve(uPix[0], uPix[1]);
+                auto dist = Distance(surfCoords, pix) - radius;
+                auto alpha = 1.f - SmoothStep(0.f, feather, dist);
+                auto currentColor = color;
+                currentColor[3] *= alpha;
+                surfData[idx] = BlendColor(currentColor, surfData[idx]);
+            }
         }
     }
 }
