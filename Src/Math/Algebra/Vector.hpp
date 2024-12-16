@@ -53,7 +53,7 @@ struct Vector
     Vector(Ts... elements) : data{ static_cast<T>(elements)... } {};
     Vector(T fill) { for (auto i = 0; i < N; ++i) data[i] = fill; }
 
-    T Dot(const Vector& other) const
+    auto Dot(const Vector& other) const -> T
     {
         T sum = T(0);
         for (auto i = 0u; i < N; ++i)
@@ -63,7 +63,7 @@ struct Vector
         return sum;
     }
 
-    T Length() const
+    auto Length() const -> T
     {
         return Sqrt(this->Dot(*this));
     }
@@ -121,6 +121,12 @@ DEFINE_VECTOR_LEFT_SCALAR_OPERATOR(/);
 DEFINE_VECTOR_LEFT_SCALAR_OPERATOR(%);
 
 #undef DEFINE_VECTOR_LEFT_SCALAR_OPERATOR
+
+template <typename TF, U32 N>
+auto Normalized(const Vector<TF, N>& v) -> Vector<TF, N>
+{
+    return v / v.Length();
+}
 
 template <typename TF, U32 N>
 auto SquaredDistance(const Vector<TF, N>& v0, const Vector<TF, N>& v1) -> TF
