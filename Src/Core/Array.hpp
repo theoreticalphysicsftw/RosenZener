@@ -34,33 +34,48 @@ struct Array : std::vector<T>
 {
     Array() = default;
 
-    constexpr U32 GetSize() const
+    Array(U64 reserved = 0)
+    {
+        std::vector<T>::reserve(reserved);
+    }
+
+    constexpr auto GetSize() const -> U64
     {
         return std::vector<T>::size();
     }
 
-    constexpr const T* GetData() const
+    constexpr auto GetBack() const -> const T&
+    {
+        return std::vector<T>::back();
+    }
+
+    constexpr auto GetBack() -> T&
+    {
+        return std::vector<T>::back();
+    }
+
+    constexpr auto GetData() const -> const T*
     {
         return std::vector<T>::data();
     }
 
-    constexpr T* GetData()
+    constexpr auto GetData() -> T*
     {
         return std::vector<T>::data();
     }
 
-    constexpr T& operator[](U32 i)
+    constexpr auto operator[](U64 i) -> T&
     {
         return std::vector<T>::operator[](i);
     }
 
-    constexpr const T& operator[](U32 i) const
+    constexpr auto operator[](U64 i) const -> const T&
     {
         return std::vector<T>::operator[](i);
     }
 
     template <typename... TArgs>
-    void EmplaceBack(TArgs&&... args)
+    constexpr auto EmplaceBack(TArgs&&... args) -> Void
     {
         std::vector<T>::template emplace_back<TArgs...>(Forward<TArgs>(args)...);
     };
