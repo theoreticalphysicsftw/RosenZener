@@ -28,24 +28,45 @@
 template <typename T>
 struct Deque : std::deque<T>
 {
-    Void PushBack(const T& v)
+    auto PushBack(const T& v) -> Void
     {
         std::deque<T>::push_back(v);
     }
 
-    Void PopFront()
+    auto PushFront(const T& v) -> Void
+    {
+        std::deque<T>::push_front(v);
+    }
+
+    auto PopFront() -> Void
     {
         std::deque<T>::pop_front();
     }
 
     template <typename... TArgs>
-    Void EmplaceBack(TArgs&&... args)
+    auto EmplaceBack(TArgs&&... args) -> Void
     {
         std::deque<T>::template emplace_back<TArgs...>(Forward<TArgs>(args)...);
     }
 
-    U64 GetSize()
+    template <typename... TArgs>
+    auto EmplaceFront(TArgs&&... args) -> Void
+    {
+        std::deque<T>::template emplace_front<TArgs...>(Forward<TArgs>(args)...);
+    }
+
+    auto GetSize() -> U64
     {
         return std::deque<T>::size();
+    }
+
+    auto GetFront() -> T&
+    {
+        return std::deque<T>::front();
+    }
+
+    auto GetFront() const -> const T&
+    {
+        return std::deque<T>::front();
     }
 };
