@@ -34,7 +34,7 @@ struct Array : std::vector<T>
 {
     Array() = default;
 
-    Array(U64 reserved = 0)
+    Array(U64 reserved)
     {
         std::vector<T>::reserve(reserved);
     }
