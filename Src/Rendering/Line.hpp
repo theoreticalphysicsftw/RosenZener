@@ -20,120 +20,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+
 #pragma once
 
-#include <Math/Discrete/BoundingBox.hpp>
+#include <Math/Geometry/Line.hpp>
+#include <Image/RawCPUImage.hpp>
+#include <Image/Color.hpp>
 
-
-template <typename TF, U32 Dim>
-struct Line
+template <typename TF>
+inline auto DrawLine(RawCPUImage& dest, Line<TF, 2> line, const Color4& color, F32 widthPixel) -> Void
 {
-	using Scalar = TF;
-	using Vec = Vector<TF, Dim>;
-	using BBox = BBox<TF, Dim>;
+	static constexpr TF feather = 2.0;
+	dest.ToSurfaceCoordinates(Span<Vector<TF, 2>>(line.points));
+	auto halfWidth = widthPixel / TF(2);
+	auto bBox = line.GetBBox();
 
-	static constexpr U32 dimension = Dim;
+	auto xMin = Min(U32(Max(TF(0), Floor(bBox.lower[0] - halfWidth))), dest.width - 1);
+	auto xMax = Min(U32(Max(TF(0), Ceil(bBox.upper[0] + halfWidth))), dest.width - 1);
+	auto yMin = Min(U32(Max(TF(0), Floor(bBox.lower[1] - halfWidth))), dest.height - 1);
+	auto yMax = Min(U32(Max(TF(0), Ceil(bBox.upper[1]) + halfWidth)), dest.height - 1);
 
-	union
+	ColorU32* surfData = (ColorU32*)dest.data.GetData();
+	for (auto i = yMin; i <= yMax; ++i)
 	{
-		struct
+		for (auto j = xMin; j <= xMax; ++j)
 		{
-			Vec p0;
-			Vec p1;
-		};
-		StaticArray<Vec, 2> points;
-	};
+			auto idx = LebesgueCurve(j, i);
+			auto pixelCenter = Vector2(j, i) + TF(0.5);
 
-	auto operator==(const Line& other) -> Bool;
-
-	Line(const Vec& p0 = Vec(), const Vec& p1 = Vec()) : p0(p0), p1(p1) {}
-
-	auto GetPolynomialCoefficients() const -> StaticArray<Vec, 2>;
-	auto GetBBox() const -> BBox;
-	auto Intersects(const BBox& bBox) const -> Bool;
-	auto EvaluateAt(Scalar t) const -> Vec;
-	auto GetCentroid() const -> Vec;
-	auto GetSquaredDistanceFrom(const Vec& p) const -> TF;
-	auto GetDistanceFrom(const Vec& p) const -> TF;
-
-	auto GetDirection() -> Vec
-	{
-		return p1 - p0;
+			auto dist = line.GetDistanceFrom(pixelCenter) - halfWidth;
+			auto alpha = TF(1) - SmoothStep(TF(0), feather, dist);
+			auto currentColor = color;
+			currentColor[3] *= alpha;
+			surfData[idx] = BlendColor(currentColor, surfData[idx]);
+		}
 	}
-};
-
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::operator==(const Line& other) -> Bool
-{
-	return points == other.points;
-}
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetPolynomialCoefficients() const -> StaticArray<Vec, 2>
-{
-	StaticArray<Vec, 2> result =
-	{
-		p1 - p0,
-		p0
-	};
-	return result;
-}
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetBBox() const -> BBox
-{
-	return BBox(points);
-}
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::Intersects(const BBox& bBox) const -> Bool
-{
-	return GetBBox().Intersects(bBox);
-}
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::EvaluateAt(Scalar t) const -> Vec
-{
-	return (Scalar(1) - t) * p0 + t * p1;
-}
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetCentroid() const -> Vec
-{
-	return (p0 + p1) / 2.f;
-}
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetSquaredDistanceFrom(const Vec& p) const -> TF
-{
-	// Polinomial coefficients of the direction from the point
-	auto coefficients = GetPolynomialCoefficients();
-	coefficients[1] = coefficients[1] - p;
-
-	auto t = -coefficients[1].Dot(coefficients[0]) / coefficients[0].Dot(coefficients[0]);
-
-	if (t >= 0 && t <= 1)
-	{
-		return SquaredDistance(p, EvaluateAt(t));
-	}
-	else
-	{
-		auto dist0 = SquaredDistance(p, p0);
-		auto dist1 = SquaredDistance(p, p1);
-		return Min(dist0, dist1);
-	}
-}
-
-
-template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetDistanceFrom(const Vec& p) const -> TF
-{
-	return Sqrt(GetSquaredDistanceFrom(p));
 }
