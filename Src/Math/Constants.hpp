@@ -34,5 +34,5 @@ struct Constants
 {
 	using Scalar = TF;
 
-	static constexpr Scalar Infinity = std::numeric_limits<Scalar>::infinity();
+	inline static constexpr Scalar Infinity = std::numeric_limits<Scalar>::infinity();
 };
