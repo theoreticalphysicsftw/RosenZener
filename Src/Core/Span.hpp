@@ -24,21 +24,66 @@
 #pragma once
 
 #include <Core/ExternAlias.hpp>
+#include <Core/StaticArray.hpp>
 
 #include <span>
 
 
+template <typename T, U64 Size = std::dynamic_extent>
+struct Span : std::span<T, Size>
+{
+    template <typename TIt>
+    explicit constexpr Span(TIt first, U64 count) :
+        std::span<T, Size>(first, count)
+    {
+    }
+
+    explicit constexpr Span(InitializerList<T> iList) :
+        std::span<T, Size>(iList)
+    {
+    }
+
+    constexpr Span(StaticArray<T, Size>& arr) :
+        std::span<T, Size>(arr.data, arr.GetSize())
+    {
+    }
+
+    constexpr Span(const StaticArray<T, Size>& arr) :
+        std::span<T, Size>(arr.data, arr.GetSize())
+    {
+    }
+};
+
+
 template <typename T>
-struct Span : std::span<T>
+struct Span<T, std::dynamic_extent> : std::span<T, std::dynamic_extent>
 {
     template <typename TIt>
     constexpr Span(TIt first, U64 count) :
-        std::span<T>(first, count)
+        std::span<T, std::dynamic_extent>(first, count)
     {
     }
 
     constexpr Span(InitializerList<T> iList) :
-        std::span<T>(iList)
+        std::span<T, std::dynamic_extent>(iList)
+    {
+    }
+
+    template <U64 Size>
+    constexpr Span(StaticArray<T, Size>& arr) :
+        std::span<T, std::dynamic_extent>(arr.data, arr.GetSize())
+    {
+    }
+
+    template <U64 Size>
+    constexpr Span(const StaticArray<T, Size>& arr) :
+        std::span<T, std::dynamic_extent>(arr.data, arr.GetSize())
     {
     }
 };
+
+template <typename T, U64 Size>
+Span(StaticArray<T, Size>&) -> Span<T, Size>;
+
+template <typename T, U64 Size>
+Span(const StaticArray<T, Size>&) -> Span<const T, Size>;

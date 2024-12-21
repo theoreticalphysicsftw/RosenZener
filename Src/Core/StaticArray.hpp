@@ -26,7 +26,7 @@
 #include <Core/Primitives.hpp>
 #include <Core/Concepts.hpp>
 
-template <typename T, U32 TSize>
+template <typename T, U64 TSize>
 struct StaticArray
 {
     StaticArray() = default;
@@ -38,17 +38,17 @@ struct StaticArray
     {
     }
 
-    constexpr U32 GetSize() const
+    constexpr U64 GetSize() const
     {
         return TSize;
     }
 
-    constexpr T& operator[](U32 i)
+    constexpr T& operator[](U64 i)
     {
         return data[i];
     }
 
-    constexpr const T& operator[](U32 i) const
+    constexpr const T& operator[](U64 i) const
     {
         return data[i];
     }
