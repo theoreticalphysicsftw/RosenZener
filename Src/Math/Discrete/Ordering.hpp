@@ -23,7 +23,30 @@
 
 #pragma once
 
-#include <Core/Primitives.hpp>
-#include <Math/Discrete/Bijections.hpp>
-#include <Math/Discrete/BitsAndIntegers.hpp>
-#include <Math/Discrete/Ordering.hpp>
+
+template <typename T>
+auto Min(const T& i0, const T& i1) -> T
+{
+    return i0 < i1? i0 : i1;
+}
+
+
+template <typename T>
+auto Max(const T& i0, const T& i1) -> T
+{
+    return i0 < i1? i1 : i0;
+}
+
+
+template <typename T>
+auto Clamp(const T& i, const T& r0, const T& r1) -> T
+{
+    return Min(Max(i, r0), r1);
+}
+
+
+template <typename T>
+auto GetClampedU8(const T& i) -> U8 
+{
+    return Clamp(i, T(0), T(255));
+}
