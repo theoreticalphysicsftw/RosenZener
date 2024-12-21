@@ -182,7 +182,7 @@ inline auto RemapToRange
 {
     auto inDelta = inRangeMax - inRangeMin;
     auto outDelta = outRangeMax - outRangeMin;
-    return outRangeMin + outDelta / inDelta * v;
+    return outRangeMin + outDelta / inDelta * (v - inRangeMin);
 }
 
 
