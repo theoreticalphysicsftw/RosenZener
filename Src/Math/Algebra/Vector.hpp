@@ -27,6 +27,7 @@
 #include <Core/Concepts.hpp>
 #include <Core/StaticArray.hpp>
 #include <Math/CommonFunctions.hpp>
+#include <Math/Discrete/Ordering.hpp>
 #include <Math/Algebra/VectorCommon.hpp>
 
 
