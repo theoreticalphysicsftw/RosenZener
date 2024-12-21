@@ -65,15 +65,17 @@ inline auto SmoothPlot2D
     T widthPixel
 ) -> Void
 {
-
-    static constexpr U32 initialTesselation = 256;
     static constexpr U32 consecutiveSubdivsTreshold = 32;
-    static constexpr F32 flatnessThreshold = 0.99998f;
+    static constexpr T flatnessThreshold = 0.99998;
+    
+    U32 initialTesselation = dest.width;
+
+    auto ts = GetTimeStampUS<F64>();
 
     Deque<Vector<T, 2>> initValues;
     auto fRange = fRangeMax - fRangeMin;
 
-    auto project = [&](const Vector<T, 2>& v) -> Vector<T, 2>
+    auto Project = [&](const Vector<T, 2>& v) -> Vector<T, 2>
     {
         return RemapToRange
         (
@@ -87,59 +89,76 @@ inline auto SmoothPlot2D
 
     for (auto i = 0u; i < initialTesselation; ++i)
     {
-        auto t = fRangeMin[0] + i / T(initialTesselation) * fRange[0];
+        auto t = fRangeMin[0] + i / T(initialTesselation - 1) * fRange[0];
         auto ft = func(t);
         initValues.EmplaceBack(Vector<T, 2>(t, ft));
     }
 
     Array<Vector<T, 2>> values;
-    auto currentTop = initValues.GetFront();
-    values.EmplaceBack(project(currentTop));
+    values.EmplaceBack(initValues.GetFront());
     initValues.PopFront();
 
     U32 consecutiveSubdivs = 0;
     
-    auto ts = GetTimeStampUS<F64>();
-    while (!initValues.empty())
+    // Keep tessellating or push the current tree points.
+    auto SplitOrPush = [&](auto& p0, auto& p1, auto& p2, Bool pushBoth)
     {
-        if (initValues.GetSize() < 2)
+        auto dir0 = Normalized(p1 - p0);
+        auto dir1 = Normalized(p2 - p0);
+        auto cosA = dir0.Dot(dir1);
+        
+        // The angle is not close enough to 0 and we've not reached
+        // the max subdivisions.
+        if (cosA < flatnessThreshold && consecutiveSubdivs < consecutiveSubdivsTreshold)
         {
-            values.EmplaceBack(project(initValues.GetFront()));
-            initValues.PopFront();
+            auto p15t = (p1[0] + p2[0]) / 2;
+            initValues.EmplaceFront(p2);
+            initValues.EmplaceFront(p15t, func(p15t));
+            if (pushBoth)
+            {
+                initValues.EmplaceFront(p1);
+                auto p05t = (p0[0] + p1[0]) / 2;
+                initValues.EmplaceFront(p05t, func(p05t));
+            }
+            consecutiveSubdivs++;
         }
         else
         {
-            auto& p0 = currentTop;
+            if (pushBoth)
+            {
+                values.EmplaceBack(p1);
+            }
+            values.EmplaceBack(p2);
+            consecutiveSubdivs = 0;
+        }
+    };
+    
+    while (!initValues.empty())
+    {
+        if (values.GetSize() < 2)
+        {
+            auto p0 = values.GetBack();
             auto p1 = initValues.GetFront();
             initValues.PopFront();
             auto p2 = initValues.GetFront();
             initValues.PopFront();
-
-            auto dir0 = Normalized(p1 - p0);
-            auto dir1 = Normalized(p2 - p0);
-            auto cosA = dir0.Dot(dir1);
-            
-            // The angle is not close enough to 0 and we've not reached
-            // the max subdivisions.
-            if (cosA < flatnessThreshold && consecutiveSubdivs < consecutiveSubdivsTreshold)
-            {
-                auto p05t = (p0[0] + p1[0]) / 2;
-                auto p15t = (p1[0] + p2[0]) / 2;
-                initValues.EmplaceFront(p2);
-                initValues.EmplaceFront(p15t, func(p15t));
-                initValues.EmplaceFront(p1);
-                initValues.EmplaceFront(p05t, func(p05t));
-                consecutiveSubdivs++;
-            }
-            else
-            {
-                values.EmplaceBack(project(p1));
-                values.EmplaceBack(project(p2));
-                currentTop = p2;
-                consecutiveSubdivs = 0;
-            }
+            SplitOrPush(p0, p1, p2, true);
+        }
+        else
+        {
+            auto p0 = values.GetBeforeBack();
+            auto p1 = values.GetBack();
+            auto p2 = initValues.GetFront();
+            initValues.PopFront();
+            SplitOrPush(p0, p1, p2, false);
         }
     }
+
+    for (auto i = 0u; i < values.GetSize(); ++i)
+    {
+        values[i] = Project(values[i]);
+    }
+
     auto te = GetTimeStampUS<F64>();
     DebugLog(__func__, ": tessellation of ", values.GetSize(), " done in ",te - ts, "us"); 
     
