@@ -22,6 +22,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_SOURCE_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_EXTERN_DIR}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${RZ_EXTERN_DIR}/SDL/include/")
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+
 add_compile_definitions("NOMINMAX")
 
 add_subdirectory("${RZ_EXTERN_DIR}/ImGUI")

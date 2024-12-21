@@ -23,36 +23,24 @@
 
 #pragma once
 
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <filesystem>
+#include <Core/Primitives.hpp>
+#include <Core/Concepts.hpp>
+
+#include <chrono>
 
 
-inline auto Terminate() -> Void
+template <typename T>
+    requires CIsArithmetic<T>
+inline auto GetTimeStampUS() -> T
 {
-	std::abort();
+    static auto staticTimePoint = std::chrono::steady_clock::now();
+    auto timePoint = std::chrono::steady_clock::now();
+    return T(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - staticTimePoint).count() / T(1000));
 }
 
-
-template <typename... Ts>
-inline auto Log(Ts... args) -> Void
+template <typename T>
+    requires CIsArithmetic<T>
+auto UsToS(T us) -> T
 {
-	(std::cout << ... << args) << std::endl;
-}
-
-
-template <typename... Ts>
-inline auto DebugLog(Ts... args) -> Void
-{
-#ifdef DEBUG
-	(std::cout << ... << args) << std::endl;
-#endif
-}
-
-
-template <typename... Ts>
-inline auto LogError(Ts... args) -> Void
-{
-	(std::cerr << ... << args) << std::endl;
+    return us / T(1000000);
 }
