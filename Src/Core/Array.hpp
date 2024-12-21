@@ -54,6 +54,16 @@ struct Array : std::vector<T>
         return std::vector<T>::back();
     }
 
+    constexpr auto GetBeforeBack() const -> const T&
+    {
+        return std::vector<T>::operator[](GetSize() - 2);
+    }
+
+    constexpr auto GetBeforeBack() -> T&
+    {
+        return std::vector<T>::operator[](GetSize() - 2);
+    }
+
     constexpr auto GetData() const -> const T*
     {
         return std::vector<T>::data();
