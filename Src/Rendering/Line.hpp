@@ -31,7 +31,7 @@ template <typename TF>
 inline auto DrawLine(RawCPUImage& dest, Line<TF, 2> line, const Color4& color, F32 widthPixel) -> Void
 {
 	static constexpr TF feather = 2.0;
-	dest.ToSurfaceCoordinates(Span<Vector<TF, 2>>(line.points));
+	dest.ToSurfaceCoordinates(Span<Vector<TF, 2>>(line.points.data, 2));
 	auto halfWidth = widthPixel / TF(2);
 	auto bBox = line.GetBBox();
 

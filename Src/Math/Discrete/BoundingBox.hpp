@@ -25,6 +25,8 @@
 
 #include <Math/Algebra.hpp>
 #include <Math/Constants.hpp>
+#include <Math/CommonFunctions.hpp>
+#include <Math/Discrete/Ordering.hpp>
 #include <Core/Span.hpp>
 
 
@@ -57,7 +59,7 @@ struct BBox
 template<typename TF, U32 Dim>
 inline BBox<TF, Dim>::BBox(VecSpan points)
 {
-	auto infinity = Constants<Scalar>::Infinity();
+	auto infinity = Constants<Scalar>::Infinity;
 	Vec minTmp(infinity, infinity);
 	Vec maxTmp(-infinity, -infinity);
 	for (auto& point : points)
@@ -74,7 +76,7 @@ template<typename TF, U32 Dim>
 template<typename TPrimitive>
 inline BBox<TF, Dim>::BBox(Span<const TPrimitive> primitives)
 {
-	auto infinity = Constants<Scalar>::Infinity();
+	auto infinity = Constants<Scalar>::Infinity;
 	Vec minTmp(infinity, infinity);
 	Vec maxTmp(-infinity, -infinity);
 	for (auto& primitive : primitives)

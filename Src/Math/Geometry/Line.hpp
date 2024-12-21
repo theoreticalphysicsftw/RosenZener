@@ -85,7 +85,7 @@ inline auto Line<TF, Dim>::GetPolynomialCoefficients() const -> StaticArray<Vec,
 template<typename TF, U32 Dim>
 inline auto Line<TF, Dim>::GetBBox() const -> BBox
 {
-	return BBox(Span<const Vector<TF, Dim>>(points));
+	return BBox(Span<const Vec>(points.data, 2));
 }
 
 
