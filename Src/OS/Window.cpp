@@ -60,6 +60,8 @@ auto Window::Init(const Char* name, U32 width, U32 height, Bool vSyncEnabled) ->
     ApplyVSyncSetting();
     isClosed = false;
 
+    screenTarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+
     return true;
 }
 
@@ -119,7 +121,7 @@ auto Window::DrawAfterClear() -> Void
         toDrawAfterClear->CopyToLockedTextureRGBA8(lockedTex);
         SDL_UnlockTexture(screenTarget);
         SDL_RenderTexture(renderer, screenTarget, nullptr, nullptr);
-        toDrawAfterClear = nullptr;
+        //toDrawAfterClear = nullptr;
     }
 }
 
