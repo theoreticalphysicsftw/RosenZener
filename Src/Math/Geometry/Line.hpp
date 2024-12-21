@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <Math/Constants.hpp>
 #include <Math/Discrete/BoundingBox.hpp>
 
 
@@ -53,8 +54,8 @@ struct Line
 	auto Intersects(const BBox& bBox) const -> Bool;
 	auto EvaluateAt(Scalar t) const -> Vec;
 	auto GetCentroid() const -> Vec;
-	auto GetSquaredDistanceFrom(const Vec& p) const -> TF;
-	auto GetDistanceFrom(const Vec& p) const -> TF;
+	auto GetSquaredDistanceFrom(const Vec& p, Bool excludeEndpoints = false) const -> TF;
+	auto GetDistanceFrom(const Vec& p, Bool excludeEndpoints = false) const -> TF;
 
 	auto GetDirection() const  -> Vec
 	{
@@ -111,7 +112,7 @@ inline auto Line<TF, Dim>::GetCentroid() const -> Vec
 
 
 template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetSquaredDistanceFrom(const Vec& p) const -> TF
+inline auto Line<TF, Dim>::GetSquaredDistanceFrom(const Vec& p, Bool excludeEndpoints) const -> TF
 {
 	// Polinomial coefficients of the direction from the point
 	auto coefficients = GetPolynomialCoefficients();
@@ -119,21 +120,25 @@ inline auto Line<TF, Dim>::GetSquaredDistanceFrom(const Vec& p) const -> TF
 
 	auto t = -coefficients[1].Dot(coefficients[0]) / coefficients[0].Dot(coefficients[0]);
 
-	if (t >= 0 && t <= 1)
+	if (t > 0 && t < 1)
 	{
 		return SquaredDistance(p, EvaluateAt(t));
 	}
-	else
+	else if (!excludeEndpoints)
 	{
 		auto dist0 = SquaredDistance(p, p0);
 		auto dist1 = SquaredDistance(p, p1);
 		return Min(dist0, dist1);
 	}
+    else
+    {
+        return Constants<TF>::Infinity;
+    }
 }
 
 
 template<typename TF, U32 Dim>
-inline auto Line<TF, Dim>::GetDistanceFrom(const Vec& p) const -> TF
+inline auto Line<TF, Dim>::GetDistanceFrom(const Vec& p, Bool excludeEndpoints) const -> TF
 {
-	return Sqrt(GetSquaredDistanceFrom(p));
+	return Sqrt(GetSquaredDistanceFrom(p, excludeEndpoints));
 }

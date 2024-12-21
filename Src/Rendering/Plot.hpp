@@ -28,6 +28,8 @@
 #include <Image/RawCPUImage.hpp>
 #include <Rendering/Point.hpp>
 #include <Rendering/Line.hpp>
+#include <OS/Time.hpp>
+#include <OS/IO.hpp>
 
 
 template <typename T>
@@ -66,42 +68,48 @@ inline auto SmoothPlot2D
 
     static constexpr U32 initialTesselation = 256;
     static constexpr U32 consecutiveSubdivsTreshold = 32;
-    static constexpr F32 flatnessThreshold = 0.998f;
+    static constexpr F32 flatnessThreshold = 0.99998f;
 
     Deque<Vector<T, 2>> initValues;
     auto fRange = fRangeMax - fRangeMin;
-    
-    for (auto i = 0u; i < initialTesselation; ++i)
+
+    auto project = [&](const Vector<T, 2>& v) -> Vector<T, 2>
     {
-        auto t = fRangeMin[0] + i / T(initialTesselation) * fRange[0];
-        auto ft = func(t);
-        auto projected = RemapToRange
+        return RemapToRange
         (
-            Vector<T, 2>(t, ft),
+            v,
             fRangeMin,
             fRangeMax,
             drawRangeMin,
             drawRangeMax
         );
-        initValues.EmplaceBack(projected);
+    };
+
+    for (auto i = 0u; i < initialTesselation; ++i)
+    {
+        auto t = fRangeMin[0] + i / T(initialTesselation) * fRange[0];
+        auto ft = func(t);
+        initValues.EmplaceBack(Vector<T, 2>(t, ft));
     }
 
     Array<Vector<T, 2>> values;
-    values.EmplaceBack(initValues.GetFront());
+    auto currentTop = initValues.GetFront();
+    values.EmplaceBack(project(currentTop));
     initValues.PopFront();
 
     U32 consecutiveSubdivs = 0;
     
+    auto ts = GetTimeStampUS<F64>();
     while (!initValues.empty())
     {
         if (initValues.GetSize() < 2)
         {
-            values.EmplaceBack(initValues.GetFront());
+            values.EmplaceBack(project(initValues.GetFront()));
             initValues.PopFront();
         }
         else
         {
-            auto& p0 = values.GetBack();
+            auto& p0 = currentTop;
             auto p1 = initValues.GetFront();
             initValues.PopFront();
             auto p2 = initValues.GetFront();
@@ -125,15 +133,21 @@ inline auto SmoothPlot2D
             }
             else
             {
-                values.EmplaceBack(p1);
-                values.EmplaceBack(p2);
+                values.EmplaceBack(project(p1));
+                values.EmplaceBack(project(p2));
+                currentTop = p2;
                 consecutiveSubdivs = 0;
             }
         }
     }
+    auto te = GetTimeStampUS<F64>();
+    DebugLog(__func__, ": tessellation of ", values.GetSize(), " done in ",te - ts, "us"); 
     
+    ts = GetTimeStampUS<F64>();
     for (auto i = 0u; i < values.GetSize() - 1; ++i)
     {
-        DrawLine(dest, *reinterpret_cast<Line<T, 2>*>(values.GetData() + i), color, widthPixel);
+        DrawLine(dest, *reinterpret_cast<Line<T, 2>*>(values.GetData() + i), color, widthPixel, true);
     }
+    te = GetTimeStampUS<F64>();
+    DebugLog(__func__, ": rendering done in ",te - ts, "us"); 
 }

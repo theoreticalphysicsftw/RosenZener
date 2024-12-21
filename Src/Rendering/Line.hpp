@@ -28,17 +28,24 @@
 #include <Image/Color.hpp>
 
 template <typename TF>
-inline auto DrawLine(RawCPUImage& dest, Line<TF, 2> line, const Color4& color, F32 widthPixel) -> Void
+inline auto DrawLine
+(
+    RawCPUImage& dest,
+    Line<TF, 2> line,
+    const Color4& color,
+    F32 widthPixel,
+    Bool excludeEndpoints = false
+) -> Void
 {
-	static constexpr TF feather = 2.0;
+	static constexpr TF feather = 1.5;
 	dest.ToSurfaceCoordinates(Span<Vector<TF, 2>>(line.points.data, 2));
 	auto halfWidth = widthPixel / TF(2);
 	auto bBox = line.GetBBox();
 
-	auto xMin = Min(U32(Max(TF(0), Floor(bBox.lower[0] - halfWidth))), dest.width - 1);
-	auto xMax = Min(U32(Max(TF(0), Ceil(bBox.upper[0] + halfWidth))), dest.width - 1);
-	auto yMin = Min(U32(Max(TF(0), Floor(bBox.lower[1] - halfWidth))), dest.height - 1);
-	auto yMax = Min(U32(Max(TF(0), Ceil(bBox.upper[1]) + halfWidth)), dest.height - 1);
+	auto xMin = Min(U32(Max(TF(0), Floor(bBox.lower[0] - halfWidth - feather))), dest.width - 1);
+	auto xMax = Min(U32(Max(TF(0), Ceil(bBox.upper[0] + halfWidth + feather))), dest.width - 1);
+	auto yMin = Min(U32(Max(TF(0), Floor(bBox.lower[1] - halfWidth - feather))), dest.height - 1);
+	auto yMax = Min(U32(Max(TF(0), Ceil(bBox.upper[1]) + halfWidth + feather)), dest.height - 1);
 
 	ColorU32* surfData = (ColorU32*)dest.data.GetData();
 	for (auto i = yMin; i <= yMax; ++i)
@@ -48,7 +55,7 @@ inline auto DrawLine(RawCPUImage& dest, Line<TF, 2> line, const Color4& color, F
 			auto idx = LebesgueCurve(j, i);
 			auto pixelCenter = Vector2(j, i) + TF(0.5);
 
-			auto dist = line.GetDistanceFrom(pixelCenter) - halfWidth;
+			auto dist = line.GetDistanceFrom(pixelCenter, excludeEndpoints) - halfWidth;
 			auto alpha = TF(1) - SmoothStep(TF(0), feather, dist);
 			auto currentColor = color;
 			currentColor[3] *= alpha;
