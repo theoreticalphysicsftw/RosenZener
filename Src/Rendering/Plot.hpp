@@ -170,3 +170,129 @@ inline auto SmoothPlot2D
     te = GetTimeStampUS<F64>();
     DebugLog(__func__, ": rendering done in ",te - ts, "us"); 
 }
+
+
+template <typename T, typename TFunc>
+inline auto SmoothParametricPlot2D
+(
+    RawCPUImage& dest,
+    const Vector<T, 2>& drawRangeMin,
+    const Vector<T, 2>& drawRangeMax,
+    const Vector<T, 3>& fRangeMin,
+    const Vector<T, 3>& fRangeMax,
+    const TFunc&& func,
+    const Color4& color,
+    T widthPixel
+) -> Void
+{
+    static constexpr U32 consecutiveSubdivsTreshold = 32;
+    static constexpr T flatnessThreshold = 0.99998;
+    
+    U32 initialTesselation = dest.width;
+
+    auto ts = GetTimeStampUS<F64>();
+
+    Deque<Vector<T, 3>> initValues;
+    auto fRange = fRangeMax - fRangeMin;
+
+    auto Project = [&](const Vector<T, 3>& v) -> Vector<T, 2>
+    {
+        return RemapToRange
+        (
+            v.template GetSubSpaceProjection<1, 2>(),
+            fRangeMin.template GetSubSpaceProjection<1, 2>(),
+            fRangeMax.template GetSubSpaceProjection<1, 2>(),
+            drawRangeMin,
+            drawRangeMax
+        );
+    };
+
+    for (auto i = 0u; i < initialTesselation; ++i)
+    {
+        auto t = fRangeMin[0] + i / T(initialTesselation - 1) * fRange[0];
+        auto ft = func(t);
+        initValues.EmplaceBack(Vector<T, 3>(t, ft[0], ft[1]));
+    }
+
+    Array<Vector<T, 3>> values;
+    values.EmplaceBack(initValues.GetFront());
+    initValues.PopFront();
+
+    U32 consecutiveSubdivs = 0;
+    
+    // Keep tessellating or push the current tree points.
+    auto SplitOrPush = [&](auto& p0, auto& p1, auto& p2, Bool pushBoth)
+    {
+        auto pp0 = p0.template GetSubSpaceProjection<1, 2>();
+        auto pp1 = p1.template GetSubSpaceProjection<1, 2>();
+        auto pp2 = p2.template GetSubSpaceProjection<1, 2>();
+        auto dir0 = Normalized(pp1 - pp0);
+        auto dir1 = Normalized(pp2 - pp0);
+        auto cosA = dir0.Dot(dir1);
+        
+        // The angle is not close enough to 0 and we've not reached
+        // the max subdivisions.
+        if (cosA < flatnessThreshold && consecutiveSubdivs < consecutiveSubdivsTreshold)
+        {
+            auto p15t = (p1[0] + p2[0]) / 2;
+            initValues.EmplaceFront(p2);
+            auto fp15 = func(p15t);
+            initValues.EmplaceFront(p15t, fp15[0], fp15[1]);
+            if (pushBoth)
+            {
+                initValues.EmplaceFront(p1);
+                auto p05t = (p0[0] + p1[0]) / 2;
+                auto fp05 = func(p05t);
+                initValues.EmplaceFront(p05t, fp05[0], fp05[1]);
+            }
+            consecutiveSubdivs++;
+        }
+        else
+        {
+            if (pushBoth)
+            {
+                values.EmplaceBack(p1);
+            }
+            values.EmplaceBack(p2);
+            consecutiveSubdivs = 0;
+        }
+    };
+    
+    while (!initValues.empty())
+    {
+        if (values.GetSize() < 2)
+        {
+            auto p0 = values.GetBack();
+            auto p1 = initValues.GetFront();
+            initValues.PopFront();
+            auto p2 = initValues.GetFront();
+            initValues.PopFront();
+            SplitOrPush(p0, p1, p2, true);
+        }
+        else
+        {
+            auto p0 = values.GetBeforeBack();
+            auto p1 = values.GetBack();
+            auto p2 = initValues.GetFront();
+            initValues.PopFront();
+            SplitOrPush(p0, p1, p2, false);
+        }
+    }
+
+    Array<Vector<T, 2>> projectedValues(values.GetSize());
+    for (auto i = 0u; i < values.GetSize(); ++i)
+    {
+        projectedValues.EmplaceBack(Project(values[i]));
+    }
+
+    auto te = GetTimeStampUS<F64>();
+    DebugLog(__func__, ": tessellation of ", values.GetSize(), " done in ",te - ts, "us"); 
+    
+    ts = GetTimeStampUS<F64>();
+    for (auto i = 0u; i < values.GetSize() - 1; ++i)
+    {
+        DrawLine(dest, *reinterpret_cast<Line<T, 2>*>(projectedValues.GetData() + i), color, widthPixel, true);
+    }
+    te = GetTimeStampUS<F64>();
+    DebugLog(__func__, ": rendering done in ",te - ts, "us"); 
+}
