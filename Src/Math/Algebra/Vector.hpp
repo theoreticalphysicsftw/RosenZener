@@ -69,6 +69,12 @@ struct Vector
         return Sqrt(this->Dot(*this));
     }
 
+    template <U32... Idxs>
+    auto GetSubSpaceProjection() const -> Vector<T, sizeof...(Idxs)>
+    {
+        return Vector<T, sizeof...(Idxs)>(data[Idxs]...);
+    }
+
     DEFINE_COMPONENT_WISE_OPERATOR(Vector, N, +);
     DEFINE_COMPONENT_WISE_OPERATOR(Vector, N, -);
     DEFINE_COMPONENT_WISE_OPERATOR(Vector, N, *);
