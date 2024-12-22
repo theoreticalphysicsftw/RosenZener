@@ -32,6 +32,12 @@ inline auto Sin(const T& x) -> T
 }
 
 template <typename T>
+inline auto Cos(const T& x) -> T
+{
+    return std::cos(x);
+}
+
+template <typename T>
 inline auto Sech(const T& x) -> T
 {
     return T(1) / std::cosh(x);
@@ -50,14 +56,19 @@ inline auto Ceil(const T& x) -> T
 }
 
 template <typename T>
+inline auto Floor(const T & x) -> T
+{
+    return std::floor(x);
+}
+
+template <typename T>
 inline auto Sqrt(const T& x) -> T
 {
     return std::sqrt(x);
 }
 
 template <typename T>
-inline auto Floor(const T & x) -> T
+inline auto Pow(const T& x, T n) -> T
 {
-    return std::floor(x);
+    return std::pow(x, n);
 }
-
