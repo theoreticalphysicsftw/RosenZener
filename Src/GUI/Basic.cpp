@@ -36,6 +36,14 @@ auto GUI::Init() -> Bool
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     auto& io = ImGui::GetIO();
+
+    ImFontConfig fontCfg;
+    fontCfg.SizePixels = 18;
+    fontCfg.OversampleV = 4;
+    fontCfg.OversampleH = 4;
+    fontCfg.PixelSnapH = true;
+    io.Fonts->AddFontDefault(&fontCfg);
+
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     ImGui::StyleColorsDark();
