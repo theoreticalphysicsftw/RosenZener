@@ -7,11 +7,32 @@
 #include <RZSimulator.hpp>
 #include <Rendering/Plot.hpp>
 
+Void GuiAccumulator()
+{
+	auto& io = ImGui::GetIO();
+	auto aspectRatio = F32(io.DisplaySize.x) / F32(io.DisplaySize.y);
+
+	const auto windowFlags =
+		ImGuiWindowFlags_NoBackground |
+		ImGuiWindowFlags_NoDecoration |
+		ImGuiWindowFlags_AlwaysAutoResize |
+		ImGuiWindowFlags_NoMove;
+	const auto windowOffset = io.DisplaySize.x * 0.025f;
+
+    ImGui::Begin("RosenZener", nullptr, windowFlags);
+	ImGui::SetWindowPos(ImVec2(windowOffset, windowOffset));
+
+    ImGui::Text("%.1f ms/frame (%.1f FPS)", 1000.f / io.Framerate, io.Framerate);
+
+    ImGui::End();
+}
+
 int main()
 {
     GThreadPool::Init();
     Window::Init("RosenZener", 1024, 512, false);
     GUI::Init();
+    GUI::AddCmdAccumulator(GuiAccumulator);
 
     RawCPUImage img(1024, 512, EFormat::RGBA8, true);
     Thread plottingThread

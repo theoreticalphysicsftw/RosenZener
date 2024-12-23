@@ -26,11 +26,18 @@
 #include <Core.hpp>
 #include <OS/Window.hpp>
 
+#include <ImGUI/imgui.h>
+
+
 class GUI
 {
 public:
+    using CmdAccumulatorFunc = Function<Void()>;
+
 	static auto Init() -> Bool;
 	static auto Destroy() -> Void;
+    static auto AddCmdAccumulator(CmdAccumulatorFunc&& f) -> U32;
+    static auto RemoveCmdAccumulator(U32 idx) -> Void;
 
 private:
 	static auto ProcessInput(const Window::Event& e) -> Bool;
@@ -38,5 +45,7 @@ private:
 	static auto PrepareRenderingData() -> Void;
 	static auto Render() -> Void;
     
+    inline static Array<CmdAccumulatorFunc> cmdAccumulators;
+
     friend class Window;
 };

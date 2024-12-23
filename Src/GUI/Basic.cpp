@@ -52,29 +52,30 @@ auto GUI::ProcessInput(const Window::Event& e) -> Bool
 }
 
 
+auto GUI::AddCmdAccumulator(CmdAccumulatorFunc&& f) -> U32
+{
+    auto idx = cmdAccumulators.GetSize();
+    cmdAccumulators.EmplaceBack(Move(f));
+    return idx;
+}
+
+
+auto GUI::RemoveCmdAccumulator(U32 idx) -> Void
+{
+    cmdAccumulators.Remove(idx);
+}
+
+
 auto GUI::AccumulateGUICommands() -> Void
 {
 	ImGui_ImplSDLRenderer3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 
-	auto& io = ImGui::GetIO();
-
-	auto aspectRatio = F32(io.DisplaySize.x) / F32(io.DisplaySize.y);
-
-	const auto windowFlags =
-		ImGuiWindowFlags_NoBackground |
-		ImGuiWindowFlags_NoDecoration |
-		ImGuiWindowFlags_AlwaysAutoResize |
-		ImGuiWindowFlags_NoMove;
-	const auto windowOffset = io.DisplaySize.x * 0.025f;
-
-    ImGui::Begin("RosenZener", nullptr, windowFlags);
-	ImGui::SetWindowPos(ImVec2(windowOffset, windowOffset));
-
-    ImGui::Text("%.1f ms/frame (%.1f FPS)", 1000.f / io.Framerate, io.Framerate);
-
-    ImGui::End();
+    for (auto& accumulator : cmdAccumulators)
+    {
+        accumulator();
+    }
 }
 
 
