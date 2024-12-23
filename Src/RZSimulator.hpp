@@ -26,6 +26,8 @@
 #include <Core.hpp>
 #include <Math/Algebra.hpp>
 #include <Math/CommonFunctions.hpp>
+#include <Math/Constants.hpp>
+
 
 template <typename TRealScalar>
 struct RZSimulator
@@ -42,13 +44,16 @@ struct RZSimulator
         RealScalar pulseWidth,
         const State& initialState,
         RealScalar timeStep,
-        RealScalar simulationSpeed
+        RealScalar simulationSpeed,
+        U64 totalIterations
     ) :
         rabiFreq(rabiFreq),
         detuning(detuning),
         pulseWidth(pulseWidth),
-        currentState(initialState),
-        initialState(initialState)
+        initialState(initialState),
+        timeStep(timeStep),
+        simulationSpeed(simulationSpeed),
+        totalIterations(totalIterations)
     {
     }
 
@@ -63,13 +68,30 @@ struct RZSimulator
         );
     }
 
+    auto Solve() -> Void
+    {
+        solution = SolveRungeKutta
+        (
+            RealScalar(0),
+            initialState,
+            [&] (RealScalar t, const State& s)
+            {
+                return Scalar(0, -1) * Constants<RealScalar>::Planck * GetHamiltionian(t) * s;
+            },
+            timeStep,
+            totalIterations 
+        );
+    }
+
+    Array<Pair<RealScalar, State>> solution;
+
 private:
     RealScalar rabiFreq;
     RealScalar detuning;
     RealScalar pulseWidth;
-    State currentState;
     State initialState;
 
     RealScalar timeStep;
     RealScalar simulationSpeed;
+    U64 totalIterations;
 };
