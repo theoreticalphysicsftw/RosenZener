@@ -35,4 +35,6 @@ struct Constants
 	using Scalar = TF;
 
 	inline static constexpr Scalar Infinity = std::numeric_limits<Scalar>::infinity();
+
+	inline static constexpr Scalar Planck = 1.054571817e-34;
 };
