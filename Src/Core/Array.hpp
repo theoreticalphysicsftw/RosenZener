@@ -84,6 +84,12 @@ struct Array : std::vector<T>
         return std::vector<T>::operator[](i);
     }
 
+
+    constexpr auto Remove(U64 i) -> Void
+    {
+        std::vector<T>::erase(std::vector<T>::begin() + i);
+    }
+
     template <typename... TArgs>
     constexpr auto EmplaceBack(TArgs&&... args) -> Void
     {
