@@ -30,14 +30,14 @@
 
 
 template <typename TRealScalar>
-struct RZSimulator
+struct RZConfig
 {
     using RealScalar = TRealScalar;
     using Scalar = Complex<RealScalar>;
     using State = Vector<Scalar, 2>;
     using Observable = Matrix<Scalar, 2, 2>;
 
-    RZSimulator
+    RZConfig
     (
         RealScalar rabiFreq,
         RealScalar detuning,
@@ -57,35 +57,6 @@ struct RZSimulator
     {
     }
 
-    Observable GetHamiltonian(const RealScalar t)
-    {
-        RealScalar omegaT = 0.5 * rabiFreq * Sech(t / pulseWidth);
-        RealScalar deltaT = detuning;
-        return Matrix
-        (
-            RealScalar(0), omegaT,
-            omegaT, detuning
-        );
-    }
-
-    auto Solve() -> Void
-    {
-        solution = SolveRungeKutta
-        (
-            RealScalar(0),
-            initialState,
-            [&] (RealScalar t, const State& s)
-            {
-                return Scalar(0, -1) * Constants<RealScalar>::Planck * GetHamiltionian(t) * s;
-            },
-            timeStep,
-            totalIterations 
-        );
-    }
-
-    Array<Pair<RealScalar, State>> solution;
-
-private:
     RealScalar rabiFreq;
     RealScalar detuning;
     RealScalar pulseWidth;
@@ -94,4 +65,52 @@ private:
     RealScalar timeStep;
     RealScalar simulationSpeed;
     U64 totalIterations;
+};
+
+template <typename TRealScalar>
+struct RZSimulator
+{
+    using RealScalar = TRealScalar;
+    using Scalar = Complex<RealScalar>;
+    using State = Vector<Scalar, 2>;
+    using Observable = Matrix<Scalar, 2, 2>;
+
+    template <typename... TArgs>
+    RZSimulator(const TArgs&... args) :
+        currentCfg(Forward<TArgs>(args)...),
+        cfg(Forward<TArgs>(args)...)
+    {
+    }
+
+    Observable GetHamiltonian(const RealScalar t)
+    {
+        RealScalar omegaT = 0.5 * cfg.rabiFreq * Sech(t / cfg.pulseWidth);
+        RealScalar deltaT = cfg.detuning;
+        return Matrix
+        (
+            RealScalar(0), omegaT,
+            omegaT, cfg.detuning
+        );
+    }
+
+    auto Solve() -> Void
+    {
+        solution = SolveRungeKutta
+        (
+            RealScalar(0),
+            cfg.initialState,
+            [&] (RealScalar t, const State& s)
+            {
+                return Scalar(0, -1) * Constants<RealScalar>::Planck * GetHamiltionian(t) * s;
+            },
+            cfg.timeStep,
+            cfg.totalIterations 
+        );
+    }
+
+    Array<Pair<RealScalar, State>> solution;
+
+    RZConfig<RealScalar> currentCfg;
+private:
+    RZConfig<RealScalar> cfg;
 };
