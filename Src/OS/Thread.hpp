@@ -83,6 +83,16 @@ struct Atomic : std::atomic<T>
         std::atomic<T>::operator=(a);
         return *this;
     }
+
+    T Load()
+    {
+        return std::atomic<T>::load();
+    }
+
+    operator T()
+    {
+        return Load();
+    }
 };
 
 

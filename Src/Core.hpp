@@ -35,3 +35,5 @@
 #include <Core/Deque.hpp>
 
 #include <Core/ThreadPool.hpp>
+
+#include <Core/LockedPtr.hpp>
