@@ -24,9 +24,11 @@
 #pragma once
 
 #include <Core.hpp>
+#include <OS/Thread.hpp>
 #include <Math/Algebra.hpp>
 #include <Math/CommonFunctions.hpp>
 #include <Math/Constants.hpp>
+#include <Math/DifferentialEquations/RungeKutta.hpp>
 
 
 template <typename TRealScalar>
@@ -57,14 +59,41 @@ struct RZConfig
     {
     }
 
-    RealScalar rabiFreq;
-    RealScalar detuning;
-    RealScalar pulseWidth;
-    State initialState;
+    auto operator==(const RZConfig& other) const -> Bool
+    {
+        return
+            rabiFreq.Load() == other.rabiFreq.Load() &&
+            detuning.Load() == other.detuning.Load() &&
+            pulseWidth.Load() == other.pulseWidth.Load() &&
+            initialState.Load() == other.initialState.Load() &&
+            timeStep.Load() == other.timeStep.Load() &&
+            simulationSpeed.Load() == other.simulationSpeed.Load() &&
+            totalIterations.Load() == other.totalIterations.Load();
+    }
 
-    RealScalar timeStep;
-    RealScalar simulationSpeed;
-    U64 totalIterations;
+    auto operator!=(const RZConfig& other) const -> Bool = default;
+
+    auto operator=(const RZConfig& other) -> RZConfig&
+    {
+        rabiFreq = other.rabiFreq.Load();
+        detuning = other.detuning.Load();
+        pulseWidth = other.pulseWidth.Load();
+        initialState = other.initialState.Load();
+        timeStep = other.timeStep.Load();
+        simulationSpeed = other.simulationSpeed.Load();
+        totalIterations = other.totalIterations.Load();
+
+        return *this;
+    }
+
+    Atomic<RealScalar> rabiFreq;
+    Atomic<RealScalar> detuning;
+    Atomic<RealScalar> pulseWidth;
+    Atomic<State> initialState;
+
+    Atomic<RealScalar> timeStep;
+    Atomic<RealScalar> simulationSpeed;
+    Atomic<U64> totalIterations;
 };
 
 template <typename TRealScalar>
@@ -74,43 +103,60 @@ struct RZSimulator
     using Scalar = Complex<RealScalar>;
     using State = Vector<Scalar, 2>;
     using Observable = Matrix<Scalar, 2, 2>;
+    using Solution = Array<Pair<RealScalar, State>>;
 
     template <typename... TArgs>
-    RZSimulator(const TArgs&... args) :
+    RZSimulator(TArgs&&... args) :
         currentCfg(Forward<TArgs>(args)...),
         cfg(Forward<TArgs>(args)...)
     {
     }
 
-    Observable GetHamiltonian(const RealScalar t)
+    auto GetHamiltonian(const RealScalar t) -> Observable
     {
-        RealScalar omegaT = 0.5 * cfg.rabiFreq * Sech(t / cfg.pulseWidth);
-        RealScalar deltaT = cfg.detuning;
-        return Matrix
+        Scalar omegaT = Scalar(0.5 * cfg.rabiFreq.Load() * Sech(t / cfg.pulseWidth.Load()), 0);
+        Scalar deltaT = Scalar(cfg.detuning.Load(), 0);
+        return Matrix<Scalar, 2, 2>
         (
-            RealScalar(0), omegaT,
-            omegaT, cfg.detuning
+            Scalar(0), omegaT,
+            omegaT, Scalar(cfg.detuning.Load(), 0)
         );
     }
 
     auto Solve() -> Void
     {
+        RefreshCfg();
+        ScopedLock<Mutex> lock(solutionMutex);
         solution = SolveRungeKutta
         (
             RealScalar(0),
-            cfg.initialState,
+            cfg.initialState.Load(),
             [&] (RealScalar t, const State& s)
             {
-                return Scalar(0, -1) * Constants<RealScalar>::Planck * GetHamiltionian(t) * s;
+                return Scalar(0, -1) * Constants<RealScalar>::Planck * GetHamiltonian(t) * s;
             },
-            cfg.timeStep,
-            cfg.totalIterations 
+            cfg.timeStep.Load(),
+            cfg.totalIterations.Load() 
         );
     }
 
-    Array<Pair<RealScalar, State>> solution;
+    auto GetSolution() const -> LockedPtr<const Solution>
+    {
+        return LockedPtr(solutionMutex, &solution);
+    }
 
     RZConfig<RealScalar> currentCfg;
 private:
+
+    auto RefreshCfg() -> Void
+    {
+        if (currentCfg != cfg)
+        {
+            cfg = currentCfg;
+        }
+    }
+
     RZConfig<RealScalar> cfg;
+    Mutex solutionMutex;
+    Solution solution;
 };
