@@ -39,6 +39,12 @@ struct Array : std::vector<T>
         std::vector<T>::reserve(reserved);
     }
 
+    Array(const Array& other) = default;
+    Array(Array&& other) = default;
+
+    Array& operator=(const Array& other) = default;
+    Array& operator=(Array&& other) = default;
+
     constexpr auto GetSize() const -> U64
     {
         return std::vector<T>::size();
