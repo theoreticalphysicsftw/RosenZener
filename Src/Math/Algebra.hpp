@@ -26,3 +26,36 @@
 #include <Math/Algebra/Vector.hpp>
 #include <Math/Algebra/Matrix.hpp>
 #include <Math/Algebra/Complex.hpp>
+
+#include <Core/TypeTraits.hpp>
+#include <Core/Concepts.hpp>
+
+
+template <typename T>
+struct VectorTraits {};
+
+template <typename T>
+	requires CIsFloatingPoint<T>
+struct VectorTraits<T>
+{
+	using Scalar = T;
+};
+
+template <typename T>
+	requires CIsFloatingPoint<T>
+struct VectorTraits<Complex<T>>
+{
+	using Scalar = Complex<T>;
+};
+
+template <typename T, U32 N>
+struct VectorTraits<Vector<T, N>>
+{
+	using Scalar = T;
+};
+
+template <typename T, U32 R, U32 C>
+struct VectorTraits<Matrix<T, R, C>>
+{
+	using Scalar = T;
+};
