@@ -34,8 +34,8 @@
         return result; \
     }
 
-#define DEFINE_COMPONENT_WISE_OPERATOR_SCALAR(CLASS, COMPONENTS, OP) const \
-    CLASS operator OP (T scalar) \
+#define DEFINE_COMPONENT_WISE_OPERATOR_SCALAR(CLASS, COMPONENTS, OP) \
+    CLASS operator OP (T scalar) const \
     { \
         CLASS result; \
         for (auto i = 0u; i < COMPONENTS; ++i) \
@@ -44,3 +44,4 @@
         } \
         return result; \
     }
+
