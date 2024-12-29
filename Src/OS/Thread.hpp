@@ -78,13 +78,13 @@ struct Atomic : std::atomic<T>
     {
     }
 
-    Atomic& operator=(const T& a)
+    auto operator=(const T& a) -> Atomic&
     {
         std::atomic<T>::operator=(a);
         return *this;
     }
 
-    T Load()
+    auto Load() const -> T
     {
         return std::atomic<T>::load();
     }
