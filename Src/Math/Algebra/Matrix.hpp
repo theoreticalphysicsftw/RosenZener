@@ -61,6 +61,26 @@ struct Matrix
     DEFINE_COMPONENT_WISE_OPERATOR_SCALAR(Matrix, TRows * TCols, / );
 };
 
+#define DEFINE_COMPONENT_WISE_OPERATOR_LEFT_SCALAR(OP) \
+    template <typename T, U32 TRows, U32 TCols> \
+    auto operator OP (T scalar, const Matrix<T, TRows, TCols>& m) \
+        -> Matrix<T, TRows, TCols> \
+    { \
+        Matrix<T, TRows, TCols> result; \
+        for (auto i = 0u; i < TRows * TCols; ++i) \
+        { \
+            result.data[i] = m.data[i] OP scalar; \
+        } \
+        return result; \
+    }
+
+DEFINE_COMPONENT_WISE_OPERATOR_LEFT_SCALAR(+);
+DEFINE_COMPONENT_WISE_OPERATOR_LEFT_SCALAR(-);
+DEFINE_COMPONENT_WISE_OPERATOR_LEFT_SCALAR(*);
+DEFINE_COMPONENT_WISE_OPERATOR_LEFT_SCALAR(/);
+
+#undef DEFINE_COMPONENT_WISE_OPERATOR_LEFT_SCALAR
+
 #define DEFINE_MATRIX_COMPONENT_WISE_FUNCTION(FUNCTION_NAME) \
     template <typename T, U32 TRows, U32 TCols> \
     Matrix<T, TRows, TCols> FUNCTION_NAME (const Matrix<T, TRows, TCols>& v) \
