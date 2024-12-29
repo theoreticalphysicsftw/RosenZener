@@ -26,7 +26,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL3/SDL.h>
 #include <Core.hpp>
-#include <Core/ExternAlias.hpp>
+#include <OS/Thread.hpp>
 #include <Image/RawCPUImage.hpp>
 
 
@@ -43,6 +43,7 @@ public:
 
 	inline static U32 width = 0;
 	inline static U32 height = 0;
+	inline static Atomic<Bool> isClosed = true;
 private:
 	static auto ProcessInput() -> Void;
 	static auto ApplyVSyncSetting() -> Void;
@@ -54,7 +55,6 @@ private:
 
     inline static const RawCPUImage* toDrawAfterClear = nullptr;
 
-	inline static Bool isClosed = true;
 	inline static Bool isVSyncOn = true;
 
 	friend class GUI;
