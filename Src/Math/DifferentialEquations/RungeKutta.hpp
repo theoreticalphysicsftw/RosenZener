@@ -25,6 +25,7 @@
 
 #include <Core/Primitives.hpp>
 #include <Core/Array.hpp>
+#include <Math/Algebra.hpp>
 
 template <typename TArg, typename TRange, typename TFunc>
     requires CIsFloatingPoint<TArg>
@@ -37,6 +38,8 @@ auto SolveRungeKutta
     U64 totalIterations
 ) -> Array<Pair<TArg, TRange>>
 {
+    using Scalar = VectorTraits<TRange>::Scalar;
+
     Array<Pair<TArg, TRange>> solution(totalIterations);
     solution.EmplaceBack(initialConditionArg, initialConditionRange);
 
@@ -49,23 +52,25 @@ auto SolveRungeKutta
         auto k1 = mapArgAndFuncToDerivative
         (
             prev.first + halfStep,
-            prev.second + halfStep * k0
+            prev.second + Scalar(halfStep) * k0
         );
         auto k2 = mapArgAndFuncToDerivative
         (
             prev.first + halfStep,
-            prev.second + halfStep * k1
+            prev.second + Scalar(halfStep) * k1
         );
         auto k3 = mapArgAndFuncToDerivative
         (
-            prev.first + steptep,
-            prev.second + step * k2
+            prev.first + step,
+            prev.second + Scalar(step) * k2
         );
 
         auto newArg = prev.first + step;
-        auto newRangeVal = prev.second + step / TArg(6) * (k0 + TArg(2) * k1 + TArg(2) * k2 + k3);
+        auto newRangeVal = prev.second + Scalar(step / TArg(6)) * (k0 + Scalar(TArg(2)) * k1 + Scalar(TArg(2)) * k2 + k3);
 
         solution.EmplaceBack(newArg, newRangeVal);
     }
+
+    return solution;
 }
 
