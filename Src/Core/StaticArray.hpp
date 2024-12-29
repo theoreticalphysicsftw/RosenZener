@@ -38,17 +38,19 @@ struct StaticArray
     {
     }
 
-    constexpr U64 GetSize() const
+    auto operator==(const StaticArray& other) const -> Bool = default;
+
+    constexpr auto GetSize() const -> U64
     {
         return TSize;
     }
 
-    constexpr T& operator[](U64 i)
+    constexpr auto operator[](U64 i) -> T&
     {
         return data[i];
     }
 
-    constexpr const T& operator[](U64 i) const
+    constexpr auto operator[](U64 i) const -> const T&
     {
         return data[i];
     }
