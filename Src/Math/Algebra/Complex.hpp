@@ -39,3 +39,9 @@ inline constexpr auto GetImag(const Complex<T>& c) -> T
 {
     return c.imag();
 }
+
+template <typename T>
+inline constexpr auto GetNorm(const Complex<T>& c) -> T
+{
+    return norm(c);
+}
