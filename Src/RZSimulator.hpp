@@ -45,7 +45,8 @@ struct RZConfig
         RealScalar detuning,
         RealScalar pulseWidth,
         const State& initialState,
-        RealScalar timeStep,
+        RealScalar timeStart,
+        RealScalar timeEnd,
         RealScalar simulationSpeed,
         U64 totalIterations
     ) :
@@ -53,47 +54,26 @@ struct RZConfig
         detuning(detuning),
         pulseWidth(pulseWidth),
         initialState(initialState),
-        timeStep(timeStep),
+        timeStart(timeStart),
+        timeEnd(timeEnd),
         simulationSpeed(simulationSpeed),
         totalIterations(totalIterations)
     {
     }
 
-    auto operator==(const RZConfig& other) const -> Bool
-    {
-        return
-            rabiFreq.Load() == other.rabiFreq.Load() &&
-            detuning.Load() == other.detuning.Load() &&
-            pulseWidth.Load() == other.pulseWidth.Load() &&
-            initialState.Load() == other.initialState.Load() &&
-            timeStep.Load() == other.timeStep.Load() &&
-            simulationSpeed.Load() == other.simulationSpeed.Load() &&
-            totalIterations.Load() == other.totalIterations.Load();
-    }
+    auto operator==(const RZConfig& other) const -> Bool = default;
 
     auto operator!=(const RZConfig& other) const -> Bool = default;
 
-    auto operator=(const RZConfig& other) -> RZConfig&
-    {
-        rabiFreq = other.rabiFreq.Load();
-        detuning = other.detuning.Load();
-        pulseWidth = other.pulseWidth.Load();
-        initialState = other.initialState.Load();
-        timeStep = other.timeStep.Load();
-        simulationSpeed = other.simulationSpeed.Load();
-        totalIterations = other.totalIterations.Load();
+    RealScalar rabiFreq;
+    RealScalar detuning;
+    RealScalar pulseWidth;
+    State initialState;
 
-        return *this;
-    }
-
-    Atomic<RealScalar> rabiFreq;
-    Atomic<RealScalar> detuning;
-    Atomic<RealScalar> pulseWidth;
-    Atomic<State> initialState;
-
-    Atomic<RealScalar> timeStep;
-    Atomic<RealScalar> simulationSpeed;
-    Atomic<U64> totalIterations;
+    RealScalar timeStart;
+    RealScalar timeEnd;
+    RealScalar simulationSpeed;
+    U64 totalIterations;
 };
 
 template <typename TRealScalar>
@@ -107,56 +87,62 @@ struct RZSimulator
 
     template <typename... TArgs>
     RZSimulator(TArgs&&... args) :
-        currentCfg(Forward<TArgs>(args)...),
-        cfg(Forward<TArgs>(args)...)
+        cfg(Forward<TArgs>(args)...),
+        currentCfg(cfg)
     {
     }
 
     auto GetHamiltonian(const RealScalar t) -> Observable
     {
-        Scalar omegaT = Scalar(0.5 * cfg.rabiFreq.Load() * Sech(t / cfg.pulseWidth.Load()), 0);
-        Scalar deltaT = Scalar(cfg.detuning.Load(), 0);
+        Scalar omegaT = Scalar(0.5 * cfg.rabiFreq * Sech(t / cfg.pulseWidth), 0);
+        Scalar deltaT = Scalar(cfg.detuning, 0);
         return Matrix<Scalar, 2, 2>
         (
             Scalar(0), omegaT,
-            omegaT, Scalar(cfg.detuning.Load(), 0)
+            omegaT, Scalar(cfg.detuning, 0)
         );
     }
 
     auto Solve() -> Void
     {
-        RefreshCfg();
-        ScopedLock<Mutex> lock(solutionMutex);
-        solution = SolveRungeKutta
-        (
-            RealScalar(0),
-            cfg.initialState.Load(),
-            [&] (RealScalar t, const State& s)
-            {
-                return Scalar(0, -1) * Constants<RealScalar>::Planck * GetHamiltonian(t) * s;
-            },
-            cfg.timeStep.Load(),
-            cfg.totalIterations.Load() 
-        );
-    }
-
-    auto GetSolution() const -> LockedPtr<const Solution>
-    {
-        return LockedPtr(solutionMutex, &solution);
-    }
-
-    RZConfig<RealScalar> currentCfg;
-private:
-
-    auto RefreshCfg() -> Void
-    {
-        if (currentCfg != cfg)
+        if (!hasInitialSolution || RefreshCfg())
         {
-            cfg = currentCfg;
+            ScopedLock<Mutex> lock(solutionMutex);
+            solution = SolveRungeKutta
+            (
+                cfg.timeStart,
+                cfg.initialState,
+                [&](RealScalar t, const State& s)
+                {
+                    return Scalar(0, -1) * GetHamiltonian(t) * s;
+                },
+                (cfg.timeEnd - cfg.timeStart) / cfg.totalIterations,
+                cfg.totalIterations
+            );
+            hasInitialSolution = true;
         }
     }
 
+    auto GetSolution() -> LockedPtr<const Solution>
+    {
+        return LockedPtr<const Solution>(solutionMutex, &solution);
+    }
+
+    Atomic<RZConfig<RealScalar>> currentCfg;
+private:
+
+    auto RefreshCfg() -> Bool
+    {
+        if (cfg != currentCfg.Load())
+        {
+            cfg = currentCfg.Load();
+            return true;
+        }
+        return false;
+    }
+
     RZConfig<RealScalar> cfg;
+    Atomic<Bool> hasInitialSolution = false;
     Mutex solutionMutex;
     Solution solution;
 };
