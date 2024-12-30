@@ -62,6 +62,12 @@ inline auto Floor(const T & x) -> T
 }
 
 template <typename T>
+inline auto Abs(const T& x) -> T
+{
+    return std::abs(x);
+}
+
+template <typename T>
 inline auto Sqrt(const T& x) -> T
 {
     return std::sqrt(x);
