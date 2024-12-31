@@ -43,16 +43,21 @@ Void GuiAccumulator()
 
     auto cfg = simulator.currentCfg.Load();
 
-    ImGui::InputDouble("Rabi Frequency", &cfg.rabiFreq);
-    ImGui::InputDouble("Detuning", &cfg.detuning);
-    ImGui::InputDouble("Pulse Width", &cfg.pulseWidth);
-    ImGui::InputDouble("## Initial State 0.0", (F64*) &cfg.initialState[0]);
-    ImGui::InputDouble("## Initial State 0.1", (F64*)&cfg.initialState[0] + 1);
-    ImGui::InputDouble("## Initial State 1.0", (F64*)&cfg.initialState[1]);
-    ImGui::InputDouble("Initial State", (F64*)&cfg.initialState[1] + 1);
+    ImGui::PushItemWidth(io.DisplaySize.x * 0.14f);
+    ImGui::InputDouble("Rabi Frequency", &cfg.rabiFreq, 0.1);
+    ImGui::InputDouble("Detuning", &cfg.detuning, 0.1);
+    ImGui::InputDouble("Pulse Width", &cfg.pulseWidth, 0.1);
+    ImGui::InputDouble("## Initial State 0.0", (F64*) &cfg.initialState[0], 0.1);
+    ImGui::SameLine();
+    ImGui::InputDouble("## Initial State 0.1", (F64*)&cfg.initialState[0] + 1, 0.1);
+    ImGui::SameLine();
+    ImGui::InputDouble("## Initial State 1.0", (F64*)&cfg.initialState[1], 0.1);
+    ImGui::SameLine();
+    ImGui::InputDouble("Initial State", (F64*)&cfg.initialState[1] + 1, 0.1);
 
-    ImGui::InputDouble("Time Start", &cfg.timeStart);
-    ImGui::InputDouble("Time End", &cfg.timeEnd);
+    ImGui::InputDouble("Time Start", &cfg.timeStart, 0.1);
+    ImGui::InputDouble("Time End", &cfg.timeEnd, 0.1);
+    ImGui::PopItemWidth();
 
     simulator.currentCfg = cfg;
 
@@ -82,49 +87,56 @@ int main()
     (
         [&]() -> Void
         {
-            auto solution = simulator.GetSolution();
-            SmoothPlot2D
-            (
-                img,
-                Vector<F64, 2>(0, 0.2),
-                Vector<F64, 2>(1, 0.8),
-                Vector<F64, 2>(-10, 0),
-                Vector<F64, 2>(10, 1),
-                [&](F64 t) -> F64
+            while (!Window::isClosed)
+            {
+                if (simulator.HasNewSolution())
                 {
-                    if (t < (*solution)[0].first)
-                    {
-                        return GetNorm((*solution)[0].second[0]);
-                    }
-                    if (t > solution->GetBack().first)
-                    {
-                        return GetNorm(solution->GetBack().second[0]);
-                    }
-                    auto first = 0;
-                    auto range = solution->GetSize();
-                    while (range > 0)
-                    {
-                        auto halfRange = range / 2;
-
-                        auto& mid = (*solution)[first + halfRange];
-                        if (mid.first < t)
+                    auto solution = simulator.GetSolution();
+                    img.Clear<U32>();
+                    SmoothPlot2D
+                    (
+                        img,
+                        Vector<F64, 2>(0, 0.2),
+                        Vector<F64, 2>(1, 0.8),
+                        Vector<F64, 2>(simulator.currentCfg.Load().timeStart, 0),
+                        Vector<F64, 2>(simulator.currentCfg.Load().timeEnd, 1),
+                        [&](F64 t) -> F64
                         {
-                            first = first + halfRange + 1;
-                            range = range - halfRange - 1;
-                        }
-                        else
-                        {
-                            range = halfRange;
-                        }
-                    }
+                            if (t < (*solution)[0].first)
+                            {
+                                return GetNorm((*solution)[0].second[0]);
+                            }
+                            if (t > solution->GetBack().first)
+                            {
+                                return GetNorm(solution->GetBack().second[0]);
+                            }
+                            auto first = 0;
+                            auto range = solution->GetSize();
+                            while (range > 0)
+                            {
+                                auto halfRange = range / 2;
 
-                    auto& val = (*solution)[first];
-                    auto probability = GetNorm(val.second[0]);
-                    return probability;
-                },
-                Color4(0, 1, 1, 1),
-                1.0
-            );
+                                auto& mid = (*solution)[first + halfRange];
+                                if (mid.first < t)
+                                {
+                                    first = first + halfRange + 1;
+                                    range = range - halfRange - 1;
+                                }
+                                else
+                                {
+                                    range = halfRange;
+                                }
+                            }
+
+                            auto& val = (*solution)[first];
+                            auto probability = GetNorm(val.second[0]);
+                            return probability;
+                        },
+                        Color4(0, 1, 1, 1),
+                        1.0
+                    );
+                }
+            }
         }
     );
     Window::AddToDrawAfterClear(img);

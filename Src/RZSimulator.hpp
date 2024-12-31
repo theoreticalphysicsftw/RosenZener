@@ -90,6 +90,7 @@ struct RZSimulator
         cfg(Forward<TArgs>(args)...),
         currentCfg(cfg)
     {
+        currentCfg = cfg;
     }
 
     auto GetHamiltonian(const RealScalar t) -> Observable
@@ -120,12 +121,21 @@ struct RZSimulator
                 cfg.totalIterations
             );
             hasInitialSolution = true;
+            newSolution = true;
         }
     }
 
     auto GetSolution() -> LockedPtr<const Solution>
     {
         return LockedPtr<const Solution>(solutionMutex, &solution);
+    }
+
+    auto HasNewSolution() -> Bool
+    {
+        ScopedLock<Mutex> lock(solutionMutex);
+        auto old = newSolution;
+        newSolution = false;
+        return old;
     }
 
     Atomic<RZConfig<RealScalar>> currentCfg;
@@ -143,6 +153,7 @@ private:
 
     RZConfig<RealScalar> cfg;
     Atomic<Bool> hasInitialSolution = false;
+    Bool newSolution = false;
     Mutex solutionMutex;
     Solution solution;
 };
