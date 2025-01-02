@@ -51,3 +51,14 @@ constexpr RemoveReference<T>&& Move(T&& t)
     return std::move(t);
 }
 
+template <typename T0, typename T1>
+constexpr auto As(const T1& v) -> const T0&
+{
+    return *reinterpret_cast<const T0*>(&v);
+}
+
+template <typename T0, typename T1>
+constexpr auto As(T1& v) -> T0&
+{
+    return *reinterpret_cast<T0*>(&v);
+}
