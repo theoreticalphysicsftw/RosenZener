@@ -49,3 +49,19 @@ private:
 
     friend class Window;
 };
+
+struct GUITexture
+{
+	ImTextureID id;
+	U32 width;
+	U32 height;
+
+	GUITexture() : id(0), width(0), height(0) {}
+	GUITexture(U32 width, U32 height) { Init(width, height); };
+
+	~GUITexture();
+	
+	auto Init(U32 width, U32 height) -> Void;
+
+	auto UpdateFromLebesgueRGBA8(const RawCPUImage& src) -> Void;
+};

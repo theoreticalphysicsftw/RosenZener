@@ -13,7 +13,13 @@ using RealScalar = RZSim::RealScalar;
 using State = RZSim::State;
 using Observable = RZSim::Observable;
 
-RZSimulator<F64> simulator
+static constexpr U32 initDisplayW = 1024;
+static constexpr U32 initDisplayH = 512;
+
+GUITexture gGraph;
+RawCPUImage gGraphRaw;
+
+RZSimulator<F64> gSimulator
 (
     16.0,
     2.0,
@@ -41,7 +47,7 @@ Void GuiAccumulator()
 
     ImGui::Text("%.1f ms/frame (%.1f FPS)", 1000.f / io.Framerate, io.Framerate);
 
-    auto cfg = simulator.currentCfg.Load();
+    auto cfg = gSimulator.currentCfg.Load();
 
     ImGui::PushItemWidth(io.DisplaySize.x * 0.14f);
     ImGui::InputDouble("Rabi Frequency", &cfg.rabiFreq, 0.1);
@@ -59,7 +65,11 @@ Void GuiAccumulator()
     ImGui::InputDouble("Time End", &cfg.timeEnd, 0.1);
     ImGui::PopItemWidth();
 
-    simulator.currentCfg = cfg;
+    auto bgDrawList = ImGui::GetBackgroundDrawList();
+    gGraph.UpdateFromLebesgueRGBA8(gGraphRaw);
+    bgDrawList->AddImage(gGraph.id, ImVec2(0, 0), ImVec2(gGraph.width, gGraph.height));
+
+    gSimulator.currentCfg = cfg;
 
     ImGui::End();
 }
@@ -67,7 +77,7 @@ Void GuiAccumulator()
 int main()
 {
     GThreadPool::Init();
-    Window::Init("RosenZener", 1024, 512, false);
+    Window::Init("RosenZener", initDisplayW, initDisplayH, false);
     GUI::Init();
     GUI::AddCmdAccumulator(GuiAccumulator);
 
@@ -77,29 +87,30 @@ int main()
         {
             while (!Window::isClosed)
             {
-                simulator.Solve();
+                gSimulator.Solve();
             }
         }
     );
 
-    RawCPUImage img(1024, 512, EFormat::RGBA8, true);
+    gGraphRaw.Init(initDisplayW, initDisplayH, EFormat::RGBA8, true);
+    gGraph.Init(initDisplayW, initDisplayH);
     Thread plottingThread
     (
         [&]() -> Void
         {
             while (!Window::isClosed)
             {
-                if (simulator.HasNewSolution())
+                if (gSimulator.HasNewSolution())
                 {
-                    auto solution = simulator.GetSolution();
-                    img.Clear<U32>();
+                    auto solution = gSimulator.GetSolution();
+                    gGraphRaw.Clear<U32>();
                     SmoothPlot2D
                     (
-                        img,
+                        gGraphRaw,
                         Vector<F64, 2>(0, 0.2),
                         Vector<F64, 2>(1, 0.8),
-                        Vector<F64, 2>(simulator.currentCfg.Load().timeStart, 0),
-                        Vector<F64, 2>(simulator.currentCfg.Load().timeEnd, 1),
+                        Vector<F64, 2>(gSimulator.currentCfg.Load().timeStart, 0),
+                        Vector<F64, 2>(gSimulator.currentCfg.Load().timeEnd, 1),
                         [&](F64 t) -> F64
                         {
                             if (t < (*solution)[0].first)
@@ -139,7 +150,6 @@ int main()
             }
         }
     );
-    Window::AddToDrawAfterClear(img);
 
     Window::Loop();
     GThreadPool::ShutDown();

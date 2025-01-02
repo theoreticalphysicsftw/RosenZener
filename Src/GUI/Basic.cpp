@@ -106,3 +106,37 @@ auto GUI::Destroy() -> Void
     ImGui::DestroyContext();
 }
 
+auto GUITexture::Init(U32 width, U32 height) -> Void
+{
+    this->width = width;
+    this->height = height;
+    id = As<ImTextureID>(SDL_CreateTexture(Window::renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, height));
+}
+
+GUITexture::~GUITexture()
+{
+    if (id)
+    {
+        SDL_DestroyTexture(As<SDL_Texture*>(id));
+    }
+}
+
+auto GUITexture::UpdateFromLebesgueRGBA8(const RawCPUImage& src) -> Void
+{
+    auto nativeTex = As<SDL_Texture*>(id);
+    SDL_Rect rect(0, 0, width, height);
+    ColorU32* dst = nullptr;
+    Int stride;
+    SDL_LockTexture(nativeTex, &rect, As<Void**>(&dst), &stride);
+    auto srcU32Ptr = reinterpret_cast<const ColorU32*>(src.data.GetData());
+    Log(SDL_GetError());
+    for (auto i = 0u; i < height; ++i)
+    {
+        for (auto j = 0u; j < width; ++j)
+        {
+            auto idx = LebesgueCurve(j, i);
+            dst[i * stride / 4 + j] = srcU32Ptr[idx];
+        }
+    }
+    SDL_UnlockTexture(nativeTex);
+}

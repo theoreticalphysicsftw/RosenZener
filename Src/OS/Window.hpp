@@ -58,4 +58,5 @@ private:
 	inline static Bool isVSyncOn = true;
 
 	friend class GUI;
+	friend class GUITexture;
 };
