@@ -68,7 +68,12 @@ struct RawCPUImage
     Array<Byte> data;
     U32 lebesgueStride;
 
-    RawCPUImage(U32 width = 0, U32 height = 0, EFormat format = EFormat::Invalid, Bool lebesgueOrdered = false);
+    auto Init(U32 width = 0, U32 height = 0, EFormat format = EFormat::Invalid, Bool lebesgueOrdered = false) -> Void;
+
+    RawCPUImage(U32 width = 0, U32 height = 0, EFormat format = EFormat::Invalid, Bool lebesgueOrdered = false)
+    {
+        Init(width, height, format, lebesgueOrdered);
+    }
 
     template <typename T>
     auto ToSurfaceCoordinates(const Vector<T, 2>& in) const -> Vector<T, 2>;
@@ -160,6 +165,26 @@ inline auto GetSize(EFormat format)
 }
 
 
+inline auto RawCPUImage::Init(U32 width, U32 height, EFormat format, Bool lebesgueOrdered) -> Void
+{
+    this->width = width;
+    this->height = height;
+    this->format = format;
+    this->lebesgueOrdered = lebesgueOrdered;
+
+    if (lebesgueOrdered)
+    {
+        auto maxDim = Max(width, height);
+        lebesgueStride = RoundToPowerOfTwo(maxDim);
+        data.resize(lebesgueStride * lebesgueStride * GetSize(format));
+    }
+    else
+    {
+        data.resize(height * width * GetSize(format));
+    }
+}
+
+
 inline auto A32FloatToRGBA8Linear(const RawCPUImage& img) -> RawCPUImage
 {
     RawCPUImage result(img.width, img.height, EFormat::RGBA8, false);
@@ -177,23 +202,6 @@ inline auto A32FloatToRGBA8Linear(const RawCPUImage& img) -> RawCPUImage
         }
     }
     return result;
-}
-
-
-inline RawCPUImage::RawCPUImage(U32 width, U32 height, EFormat format, Bool lebesgueOrdered) :
-    width(width), height(height), format(format), lebesgueOrdered(lebesgueOrdered)
-{
-    if (lebesgueOrdered)
-    {
-        auto maxDim = Max(width, height);
-        lebesgueStride = RoundToPowerOfTwo(maxDim);
-        data.resize(lebesgueStride * lebesgueStride * GetSize(format));
-    }
-    else
-    {
-        data.resize(height * width * GetSize(format));
-    }
-
 }
 
 
