@@ -24,18 +24,44 @@
 #pragma once
 
 #include <Core/Primitives.hpp>
-#include <Core/ExternAlias.hpp>
 
-#include <Core/TypeTraits.hpp>
-#include <Core/Concepts.hpp>
+#include <string>
+#include <cstring>
 
-#include <Core/StaticArray.hpp>
-#include <Core/Array.hpp>
-#include <Core/Span.hpp>
-#include <Core/Deque.hpp>
 
-#include <Core/String.hpp>
+struct String : std::string
+{
+	String() = default;
+	String(const Char* cstr) : std::string(cstr) {}
+	String(const String& str) = default;
+	String(String&& str) = default;
+	
+	auto operator=(const String&) -> String& = default;
+	auto operator=(String&&) -> String& = default;
 
-#include <Core/ThreadPool.hpp>
+	auto operator=(const Char* cstr) -> String&
+	{
+		std::string::operator+=(cstr);
+		return *this;
+	}
 
-#include <Core/LockedPtr.hpp>
+	auto ToCStr() const -> const Char*
+	{
+		return std::string::c_str();
+	}
+
+	auto GetData() -> Char*
+	{
+		return std::string::data();
+	}
+
+	auto GetData() const -> const Char*
+	{
+		return std::string::data();
+	}
+
+	auto GetSize() const -> U32
+	{
+		return std::string::size();
+	}
+};
