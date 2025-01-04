@@ -1,7 +1,8 @@
-#include <Core.hpp>
+﻿#include <Core.hpp>
 #include <OS/Window.hpp>
 #include <OS/Thread.hpp>
 #include <GUI/Basic.hpp>
+#include <GUI/BasicWidgets.hpp>
 #include <Math/Algebra/Matrix.hpp>
 #include <Image/RawCPUImage.hpp>
 #include <RZSimulator.hpp>
@@ -50,24 +51,40 @@ Void GuiAccumulator()
     auto cfg = gSimulator.currentCfg.Load();
 
     ImGui::PushItemWidth(io.DisplaySize.x * 0.14f);
-    ImGui::InputDouble("Rabi Frequency", &cfg.rabiFreq, 0.1);
-    ImGui::InputDouble("Detuning", &cfg.detuning, 0.1);
-    ImGui::InputDouble("Pulse Width", &cfg.pulseWidth, 0.1);
-    ImGui::InputDouble("## Initial State 0.0", (F64*) &cfg.initialState[0], 0.1);
+    ImGui::InputDouble("\xCE\xA9\xE2\x82\x80 - Rabi frequency", &cfg.rabiFreq, 0.1);
+    ImGui::InputDouble("\xCE\x94\xE2\x82\x80 - detuning", &cfg.detuning, 0.1);
+    ImGui::InputDouble("T - pulse width", &cfg.pulseWidth, 0.1);
+    ImGui::InputDouble("## Iitial State 0.0", (F64*) &cfg.initialState[0], 0.1);
     ImGui::SameLine();
     ImGui::InputDouble("## Initial State 0.1", (F64*)&cfg.initialState[0] + 1, 0.1);
     ImGui::SameLine();
     ImGui::InputDouble("## Initial State 1.0", (F64*)&cfg.initialState[1], 0.1);
     ImGui::SameLine();
-    ImGui::InputDouble("Initial State", (F64*)&cfg.initialState[1] + 1, 0.1);
+    ImGui::InputDouble("\xCE\xA8 - initial state", (F64*)&cfg.initialState[1] + 1, 0.1);
 
-    ImGui::InputDouble("Time Start", &cfg.timeStart, 0.1);
-    ImGui::InputDouble("Time End", &cfg.timeEnd, 0.1);
+    ImGui::InputDouble("t\xE2\x82\x80 - start time", &cfg.timeStart, 0.1);
+    ImGui::InputDouble("t\xE2\x82\x81 - end time", &cfg.timeEnd, 0.1);
     ImGui::PopItemWidth();
 
     auto bgDrawList = ImGui::GetBackgroundDrawList();
     gGraph.UpdateFromLebesgueRGBA8(gGraphRaw);
     bgDrawList->AddImage(gGraph.id, ImVec2(0, 0), ImVec2(gGraph.width, gGraph.height));
+
+    PlotEuclideanCoordinateFrame2D
+    (
+        Vector2(0.8 * cfg.timeStart, 0),
+        Vector2(0.8 * cfg.timeEnd, 1),
+        Vector2(0.2 * io.DisplaySize.x, 0.8 * io.DisplaySize.y),
+        Vector2(0.8 * io.DisplaySize.x, 0.2 * io.DisplaySize.y),
+        Vector2((cfg.timeEnd + cfg.timeStart) / 2, 0),
+        "",
+        "",
+        "t",
+        "",
+        8,
+        0xFFFFFFFF,
+        2.0
+    );
 
     gSimulator.currentCfg = cfg;
 
