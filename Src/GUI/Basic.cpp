@@ -24,6 +24,7 @@
 #include <GUI/Basic.hpp>
 #include <OS/Window.hpp>
 #include <OS/IO.hpp>
+#include <Core.hpp>
 
 #include <ImGUI/imgui.h>
 #include <ImGUI/backends/imgui_impl_sdl3.h>
@@ -42,6 +43,8 @@ auto GUI::Init() -> Bool
     fontCfg.OversampleV = 4;
     fontCfg.OversampleH = 4;
     fontCfg.PixelSnapH = true;
+    static StaticArray<ImWchar, 7> defaultRanges = {0x0020, 0x024F, 0x0370, 0x03FF, 0x2070, 0x209F, 0};
+    fontCfg.GlyphRanges = defaultRanges.data;
     io.Fonts->AddFontDefault(&fontCfg);
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -129,7 +132,7 @@ auto GUITexture::UpdateFromLebesgueRGBA8(const RawCPUImage& src) -> Void
     Int stride;
     SDL_LockTexture(nativeTex, &rect, As<Void**>(&dst), &stride);
     auto srcU32Ptr = reinterpret_cast<const ColorU32*>(src.data.GetData());
-    Log(SDL_GetError());
+
     for (auto i = 0u; i < height; ++i)
     {
         for (auto j = 0u; j < width; ++j)
