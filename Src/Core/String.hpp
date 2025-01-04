@@ -27,15 +27,17 @@
 
 #include <string>
 #include <cstring>
+#include <format>
 
 
 struct String : std::string
 {
-	String() = default;
-	String(const Char* cstr) : std::string(cstr) {}
-	String(const String& str) = default;
-	String(String&& str) = default;
-	
+	constexpr String() = default;
+	constexpr String(const Char* cstr) : std::string(cstr) {}
+	constexpr String(const std::string& str) : std::string(str) {}
+	constexpr String(const String& str) = default;
+	constexpr String(String&& str) = default;
+
 	auto operator=(const String&) -> String& = default;
 	auto operator=(String&&) -> String& = default;
 
@@ -65,3 +67,18 @@ struct String : std::string
 		return std::string::size();
 	}
 };
+
+template <typename... TArgs>
+using FormatStr = std::format_string<TArgs...>;
+
+template <typename... TArgs>
+constexpr auto Format(const Char* fmt, TArgs&&... args) -> String
+{
+	return std::vformat(fmt, std::make_format_args(args...));
+}
+
+template <typename... TArgs>
+constexpr auto Format(const String& fmt, TArgs&&... args) -> String
+{
+	return std::vformat(fmt, std::make_format_args(args...));
+}
