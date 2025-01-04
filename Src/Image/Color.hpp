@@ -61,6 +61,11 @@ union ColorU32
     ColorU32(const Color4& c4);
 
     operator Color4() const;
+
+    operator U32() const
+    {
+        return packed;
+    }
 };
 
 
