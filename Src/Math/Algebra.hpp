@@ -59,3 +59,10 @@ struct VectorTraits<Matrix<T, R, C>>
 {
 	using Scalar = T;
 };
+
+
+template <typename TVec, typename TScalar>
+TVec Lerp(const TVec& a, const TVec& b, TScalar t)
+{
+	return a + t * (b - a);
+}
