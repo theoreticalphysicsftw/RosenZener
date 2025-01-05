@@ -130,6 +130,47 @@ struct RZSimulator
         return LockedPtr<const Solution>(solutionMutex, &solution);
     }
 
+    auto GetSolutionAtTime(RealScalar t) -> State
+    {
+        if (t < solution[0].first)
+        {
+            return solution[0].second;
+        }
+        if (t > solution.GetBack().first)
+        {
+            return solution.GetBack().second;
+        }
+        auto first = 0;
+        auto range = solution.GetSize();
+        while (range > 0)
+        {
+            auto halfRange = range / 2;
+
+            auto& mid = solution[first + halfRange];
+            if (mid.first < t)
+            {
+                first = first + halfRange + 1;
+                range = range - halfRange - 1;
+            }
+            else
+            {
+                range = halfRange;
+            }
+        }
+
+        auto val = solution[first].second;
+        if (first > 0)
+        {
+            auto t1 = solution[first].first;
+            auto t0 = solution[first - 1].first;
+            auto v1 = solution[first].second;
+            auto v0 = solution[first - 1].second;
+            auto tNorm = Complex<F64>((t - t0) / (t1 - t0));
+            val = Lerp(v0, v1, tNorm);
+        }
+        return val;
+    }
+
     auto HasNewSolution() -> Bool
     {
         ScopedLock<Mutex> lock(solutionMutex);

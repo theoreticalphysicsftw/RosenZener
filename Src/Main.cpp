@@ -130,34 +130,8 @@ int main()
                         Vector<F64, 2>(gSimulator.currentCfg.Load().timeEnd, 1),
                         [&](F64 t) -> F64
                         {
-                            if (t < (*solution)[0].first)
-                            {
-                                return GetNorm((*solution)[0].second[0]);
-                            }
-                            if (t > solution->GetBack().first)
-                            {
-                                return GetNorm(solution->GetBack().second[0]);
-                            }
-                            auto first = 0;
-                            auto range = solution->GetSize();
-                            while (range > 0)
-                            {
-                                auto halfRange = range / 2;
-
-                                auto& mid = (*solution)[first + halfRange];
-                                if (mid.first < t)
-                                {
-                                    first = first + halfRange + 1;
-                                    range = range - halfRange - 1;
-                                }
-                                else
-                                {
-                                    range = halfRange;
-                                }
-                            }
-
-                            auto& val = (*solution)[first];
-                            auto probability = GetNorm(val.second[0]);
+                            auto val = gSimulator.GetSolutionAtTime(t);
+                            auto probability = GetNorm(val[0]);
                             return probability;
                         },
                         Color4(0, 1, 1, 1),

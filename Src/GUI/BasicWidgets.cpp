@@ -57,7 +57,7 @@ auto PlotEuclideanCoordinateFrame2D
 		auto x = x0 + (x1 - x0) * F32(i) / F32(unitsDrawn);
 		auto val = RemapToRange(x, minDrawBounds, maxDrawBounds, minBounds, maxBounds);
 		bgDrawList->AddLine(ImVec2(x[0], x[1] - 4), ImVec2(x[0], x[1] + 4), axisColor, axisWidth);
-		bgDrawList->AddText(ImVec2(x[0] + 2, x[1] + 2), axisColor, Format("{:.2f}", val[0]).ToCStr());
+		bgDrawList->AddText(ImVec2(x[0] + 2, x[1] + 2), axisColor, (Format("{:.2f}", val[0]) + xUnitsConst).ToCStr());
 	}
 
 	for (auto i = 1u; i < unitsDrawn; ++i)
@@ -65,7 +65,7 @@ auto PlotEuclideanCoordinateFrame2D
 		auto y = y0 + (y1 - y0) * F32(i) / F32(unitsDrawn);
 		auto val = RemapToRange(y, minDrawBounds, maxDrawBounds, minBounds, maxBounds);
 		bgDrawList->AddLine(ImVec2(y[0] - 4, y[1]), ImVec2(y[0] + 4, y[1]), axisColor, axisWidth);
-		bgDrawList->AddText(ImVec2(y[0] + 7, y[1] - 10), axisColor, Format("{:.2f}", val[1]).ToCStr());
+		bgDrawList->AddText(ImVec2(y[0] + 7, y[1] - 10), axisColor, (Format("{:.2f}", val[1]) + yUnitsConst).ToCStr());
 
 	}
 }
