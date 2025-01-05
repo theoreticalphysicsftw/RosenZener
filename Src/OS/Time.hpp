@@ -40,7 +40,14 @@ inline auto GetTimeStampUS() -> T
 
 template <typename T>
     requires CIsArithmetic<T>
-auto UsToS(T us) -> T
+inline auto UsToS(T us) -> T
 {
     return us / T(1000000);
+}
+
+using StdTimePoint = std::chrono::system_clock::time_point;
+
+inline auto GetStdTimePoint() -> StdTimePoint
+{
+    return std::chrono::system_clock::now();
 }
