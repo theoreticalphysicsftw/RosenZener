@@ -38,7 +38,8 @@ auto PlotEuclideanCoordinateFrame2D
 	const String& yUnitsConst,
 	const String& xTerm,
 	const String& yTerm,
-	U32 unitsDrawn,
+	U32 unitsDrawnX,
+	U32 unitsDrawnY,
 	ColorU32 axisColor,
 	F32 axisWidth
 ) -> Void
@@ -51,21 +52,29 @@ auto PlotEuclideanCoordinateFrame2D
 	auto y1 = Vector2(drawCenter[0], maxDrawBounds[1]);
 	bgDrawList->AddLine(As<ImVec2>(x0), As<ImVec2>(x1), axisColor, axisWidth);
 	bgDrawList->AddLine(As<ImVec2>(y0), As<ImVec2>(y1), axisColor, axisWidth);
+	
+	bgDrawList->AddText(ImVec2(x1[0] - 10, x1[1] + 2), axisColor, xTerm.ToCStr());
+	bgDrawList->AddText(ImVec2(y1[0] + 7, y1[1] - 2), axisColor, yTerm.ToCStr());
 
-	for (auto i = 1u; i < unitsDrawn; ++i)
+	for (auto i = 1u; i < unitsDrawnX; ++i)
 	{
-		auto x = x0 + (x1 - x0) * F32(i) / F32(unitsDrawn);
+		auto x = x0 + (x1 - x0) * F32(i) / F32(unitsDrawnX);
 		auto val = RemapToRange(x, minDrawBounds, maxDrawBounds, minBounds, maxBounds);
 		bgDrawList->AddLine(ImVec2(x[0], x[1] - 4), ImVec2(x[0], x[1] + 4), axisColor, axisWidth);
-		bgDrawList->AddText(ImVec2(x[0] + 2, x[1] + 2), axisColor, (Format("{:.2f}", val[0]) + xUnitsConst).ToCStr());
+		if (!AreClose(x[0], drawCenter[0]))
+		{
+			bgDrawList->AddText(ImVec2(x[0] + 2, x[1] + 2), axisColor, (Format("{:.2f}", val[0]) + xUnitsConst).ToCStr());
+		}
 	}
 
-	for (auto i = 1u; i < unitsDrawn; ++i)
+	for (auto i = 1u; i < unitsDrawnY; ++i)
 	{
-		auto y = y0 + (y1 - y0) * F32(i) / F32(unitsDrawn);
+		auto y = y0 + (y1 - y0) * F32(i) / F32(unitsDrawnY);
 		auto val = RemapToRange(y, minDrawBounds, maxDrawBounds, minBounds, maxBounds);
 		bgDrawList->AddLine(ImVec2(y[0] - 4, y[1]), ImVec2(y[0] + 4, y[1]), axisColor, axisWidth);
-		bgDrawList->AddText(ImVec2(y[0] + 7, y[1] - 10), axisColor, (Format("{:.2f}", val[1]) + yUnitsConst).ToCStr());
-
+		if (!AreClose(y[1], drawCenter[1]))
+		{
+			bgDrawList->AddText(ImVec2(y[0] + 7, y[1] - 10), axisColor, (Format("{:.2f}", val[1]) + yUnitsConst).ToCStr());
+		}
 	}
 }

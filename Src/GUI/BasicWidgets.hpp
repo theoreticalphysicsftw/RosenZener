@@ -39,7 +39,8 @@ auto PlotEuclideanCoordinateFrame2D
 	const String& yUnitsConst,
 	const String& xTerm,
 	const String& yTerm,
-	U32 unitsDrawn,
+	U32 unitsDrawnX,
+	U32 unitsDrawnY,
 	ColorU32 axisColor,
 	F32 axisWidth
 ) -> Void;

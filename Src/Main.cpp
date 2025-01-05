@@ -20,17 +20,35 @@ static constexpr U32 initDisplayH = 512;
 GUITexture gGraph;
 RawCPUImage gGraphRaw;
 
+static Atomic<ColorU32> gE0Color = ColorU32(0xFFFFFF00);
+static Atomic<ColorU32> gE1Color = ColorU32(0xFFFF00FF);
+
+
 RZSimulator<F64> gSimulator
 (
     16.0,
-    2.0,
+    0.5,
     2.0,
     State(Scalar(1.0), Scalar(0.0)),
-    -10.0,
-    10.0,
+    -10,
+    10,
     1.0,
     4096
 );
+
+Void DisplayState()
+{
+    auto& io = ImGui::GetIO();
+    auto bgDrawList = ImGui::GetBackgroundDrawList();
+    auto cfg = gSimulator.currentCfg.Load();
+
+    auto rfVal = Format("{} = {:.2f}", "\xCE\xA9\xE2\x82\x80", cfg.rabiFreq);
+    auto dVal = Format("{} = {:.2f}", "\xCE\x94\xE2\x82\x80", cfg.detuning);
+    auto pwVal = Format("{} = {:.2f}", "T", cfg.pulseWidth);
+    bgDrawList->AddText(ImVec2(io.DisplaySize.x * 0.75f, 0.025f * io.DisplaySize.y), 0xFFFFFFFF, rfVal.ToCStr());
+    bgDrawList->AddText(ImVec2(io.DisplaySize.x * 0.75f, 0.025f * io.DisplaySize.y + 20), 0xFFFFFFFF, dVal.ToCStr());
+    bgDrawList->AddText(ImVec2(io.DisplaySize.x * 0.75f, 0.025f * io.DisplaySize.y + 40), 0xFFFFFFFF, pwVal.ToCStr());
+}
 
 Void GuiAccumulator()
 {
@@ -70,18 +88,21 @@ Void GuiAccumulator()
     gGraph.UpdateFromLebesgueRGBA8(gGraphRaw);
     bgDrawList->AddImage(gGraph.id, ImVec2(0, 0), ImVec2(gGraph.width, gGraph.height));
 
+    DisplayState();
+
     PlotEuclideanCoordinateFrame2D
     (
-        Vector2(0.8 * cfg.timeStart, 0),
-        Vector2(0.8 * cfg.timeEnd, 1),
-        Vector2(0.2 * io.DisplaySize.x, 0.8 * io.DisplaySize.y),
-        Vector2(0.8 * io.DisplaySize.x, 0.2 * io.DisplaySize.y),
+        Vector2(1 * cfg.timeStart, 0),
+        Vector2(1 * cfg.timeEnd, 1),
+        Vector2(0 * io.DisplaySize.x, 0.8 * io.DisplaySize.y),
+        Vector2(1 * io.DisplaySize.x, 0.2 * io.DisplaySize.y),
         Vector2((cfg.timeEnd + cfg.timeStart) / 2, 0),
         "",
         "",
         "t",
         "",
-        8,
+        10,
+        10,
         0xFFFFFFFF,
         2.0
     );
@@ -89,12 +110,22 @@ Void GuiAccumulator()
     gSimulator.currentCfg = cfg;
 
     ImGui::End();
+    ImGui::Begin("## Legend", nullptr, windowFlags | ImGuiWindowFlags_NoDecoration);
+    ImGui::SetWindowPos(ImVec2(windowOffset, 0.85 * io.DisplaySize.y));
+    ImColor c0 = As<ImColor>(gE0Color.Load().operator Color4());
+    ImColor c1 = As<ImColor>(gE1Color.Load().operator Color4());
+    ImGui::ColorEdit3("probability of measuring the first energy level", As<F32*>(&c0), ImGuiColorEditFlags_NoInputs);
+    ImGui::ColorEdit3("probability of measuring the second energy level", As<F32*>(&c1), ImGuiColorEditFlags_NoInputs);
+    gE0Color = ColorU32((U32)c0);
+    gE1Color = ColorU32((U32)c1);
+
+    ImGui::End();
 }
 
 int main()
 {
     GThreadPool::Init();
-    Window::Init("RosenZener", initDisplayW, initDisplayH, false);
+    Window::Init("RosenZener", initDisplayW, initDisplayH, true);
     GUI::Init();
     GUI::AddCmdAccumulator(GuiAccumulator);
 
@@ -134,7 +165,23 @@ int main()
                             auto probability = GetNorm(val[0]);
                             return probability;
                         },
-                        Color4(0, 1, 1, 1),
+                        gE0Color.Load().operator Color4(),
+                        1.0
+                    );
+                    SmoothPlot2D
+                    (
+                        gGraphRaw,
+                        Vector<F64, 2>(0, 0.2),
+                        Vector<F64, 2>(1, 0.8),
+                        Vector<F64, 2>(gSimulator.currentCfg.Load().timeStart, 0),
+                        Vector<F64, 2>(gSimulator.currentCfg.Load().timeEnd, 1),
+                        [&](F64 t) -> F64
+                        {
+                            auto val = gSimulator.GetSolutionAtTime(t);
+                            auto probability = GetNorm(val[1]);
+                            return probability;
+                        },
+                        gE1Color.Load().operator Color4(),
                         1.0
                     );
                 }
