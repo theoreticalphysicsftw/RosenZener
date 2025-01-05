@@ -33,7 +33,7 @@ struct StaticArray
 
     template <typename... TArgs>
         requires CAllAreConstructibleFrom<T, TArgs...>
-    StaticArray(TArgs... args) :
+    constexpr StaticArray(TArgs... args) :
         data{static_cast<T>(args)...}
     {
     }

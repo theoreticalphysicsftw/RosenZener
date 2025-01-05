@@ -56,13 +56,13 @@ union ColorU32
         U8 a1;
     };
 
-    ColorU32(U32 raw = 0);
-    ColorU32(U8 r, U8 g, U8 b, U8 a);
-    ColorU32(const Color4& c4);
+    constexpr ColorU32(U32 raw = 0);
+    constexpr ColorU32(U8 r, U8 g, U8 b, U8 a);
+    constexpr ColorU32(const Color4& c4);
 
-    operator Color4() const;
+    constexpr operator Color4() const;
 
-    operator U32() const
+    constexpr operator U32() const
     {
         return packed;
     }
@@ -77,19 +77,19 @@ inline auto RGBAToYUVA(ColorU32) -> ColorU32;
 inline auto RGBAToGrayscale(ColorU32) -> U8;
 
 
-inline ColorU32::ColorU32(U32 raw) :
+inline constexpr ColorU32::ColorU32(U32 raw) :
     packed(raw)
 {
 }
 
 
-inline ColorU32::ColorU32(U8 r, U8 g, U8 b, U8 a) :
+inline constexpr ColorU32::ColorU32(U8 r, U8 g, U8 b, U8 a) :
     r(r), g(g), b(b), a(a)
 {
 }
 
 
-inline ColorU32::ColorU32(const Color4& c4)
+inline constexpr ColorU32::ColorU32(const Color4& c4)
 {
     r = U8(c4[0] * 255);
     g = U8(c4[1] * 255);
@@ -98,7 +98,7 @@ inline ColorU32::ColorU32(const Color4& c4)
 }
 
 
-inline ColorU32::operator Color4() const
+inline constexpr ColorU32::operator Color4() const
 {
     return Color4(r / 255.f, g / 255.f, b / 255.f, a / 255.f);
 }
