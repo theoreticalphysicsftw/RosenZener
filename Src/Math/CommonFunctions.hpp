@@ -78,3 +78,9 @@ inline auto Pow(const T& x, T n) -> T
 {
     return std::pow(x, n);
 }
+
+template <typename T>
+inline auto AreClose(T a, T b, T eps = 0.000001) -> Bool
+{
+    return Abs(a - b) < eps;
+}
