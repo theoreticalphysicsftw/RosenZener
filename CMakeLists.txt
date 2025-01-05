@@ -28,6 +28,8 @@ add_compile_definitions("NOMINMAX")
 
 add_subdirectory("${RZ_EXTERN_DIR}/ImGUI")
 add_subdirectory("${RZ_EXTERN_DIR}/SDL")
+add_subdirectory("${RZ_EXTERN_DIR}/LibWebp")
 
 target_link_libraries(${PROJECT_NAME} ImGUI)
 target_link_libraries(${PROJECT_NAME} SDLStatic)
+target_link_libraries(${PROJECT_NAME} LibWebp)
