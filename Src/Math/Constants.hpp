@@ -37,4 +37,5 @@ struct Constants
 	inline static constexpr Scalar Infinity = std::numeric_limits<Scalar>::infinity();
 
 	inline static constexpr Scalar Planck = 1.054571817e-34;
+	inline static constexpr Scalar Pi = 3.141592653589793238462643383279502884L;
 };
