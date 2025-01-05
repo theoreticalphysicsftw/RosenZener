@@ -24,6 +24,9 @@
 #include <OS/Window.hpp>
 #include <GUI/Basic.hpp>
 #include <OS/IO.hpp>
+#include <OS/Time.hpp>
+#include <OS/FileSystem.hpp>
+#include <Encoders/Webp.hpp>
 
 #include <SDL3/SDL_main.h>
 
@@ -93,13 +96,44 @@ auto Window::Loop() -> Void
     {
         ProcessInput();
 
+        auto sdlColor = clearColor * 255.f;
+        SDL_SetRenderDrawColor
+        (
+            renderer,
+            GetClampedU8(sdlColor[0]),
+            GetClampedU8(sdlColor[1]),
+            GetClampedU8(sdlColor[2]),
+            GetClampedU8(sdlColor[3])
+        );
         SDL_RenderClear(renderer);
         DrawAfterClear();
         GUI::AccumulateGUICommands();
         GUI::PrepareRenderingData();
         GUI::Render();
+
+        if (takeScreenShotThisFrame)
+        {
+            takeScreenShotThisFrame = false;
+            TakeScreenShot();
+        }
+
         SDL_RenderPresent(renderer);
     }
+}
+
+
+auto Window::TakeScreenShot() -> Void
+{
+    auto surf = SDL_RenderReadPixels(renderer, nullptr);
+    auto encoded = EncodeWebpBGRA((const Byte*)surf->pixels, surf->w, surf->h, surf->pitch, 70);
+    auto fileName = Format("RosenZener-{:%Y-%m-%d-%H-%M-%S}.webp", GetStdTimePoint());
+    WriteWholeFile(fileName.ToCStr(), Span<const Byte>(encoded.GetData(), encoded.GetSize()), false);
+}
+
+
+auto Window::SetClearColor(const Color4& color) -> Void
+{
+    clearColor = color;
 }
 
 

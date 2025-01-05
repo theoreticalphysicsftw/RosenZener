@@ -28,6 +28,7 @@
 #include <Core.hpp>
 #include <OS/Thread.hpp>
 #include <Image/RawCPUImage.hpp>
+#include <Image/Color.hpp>
 
 
 class Window
@@ -40,18 +41,23 @@ public:
 	static auto Destroy() -> Void;
     
     static auto AddToDrawAfterClear(const RawCPUImage& imgRGBA8) -> Void;
+	static auto SetClearColor(const Color4& color) -> Void;
 
 	inline static U32 width = 0;
 	inline static U32 height = 0;
 	inline static Atomic<Bool> isClosed = true;
+	inline static Atomic<Bool> takeScreenShotThisFrame = false;
 private:
 	static auto ProcessInput() -> Void;
 	static auto ApplyVSyncSetting() -> Void;
     static auto DrawAfterClear() -> Void;
+	static auto TakeScreenShot() -> Void;
 
 	inline static SDL_Window* window = nullptr;
     inline static SDL_Renderer* renderer = nullptr;
     inline static SDL_Texture* screenTarget = nullptr;
+
+	inline static Color4 clearColor = Color4(0, 0, 0, 1);
 
     inline static const RawCPUImage* toDrawAfterClear = nullptr;
 
