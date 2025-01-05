@@ -39,6 +39,12 @@ struct Array : std::vector<T>
         std::vector<T>::reserve(reserved);
     }
 
+    template <typename TIt>
+    Array(const TIt& it0, const TIt it1) :
+        std::vector<T>(it0, it1)
+    {
+    }
+
     Array(const Array& other) = default;
     Array(Array&& other) = default;
 
