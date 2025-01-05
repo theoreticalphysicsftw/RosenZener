@@ -66,6 +66,11 @@ struct String : std::string
 	{
 		return std::string::size();
 	}
+
+	constexpr auto operator+(const String& other) -> String
+	{
+		return As<String>(As<std::string>(*this) + As<std::string>(other));
+	}
 };
 
 template <typename... TArgs>
