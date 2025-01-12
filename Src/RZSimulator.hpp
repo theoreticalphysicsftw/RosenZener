@@ -171,6 +171,26 @@ struct RZSimulator
         return val;
     }
 
+    auto GetAnalythicSolutionAtTime(RealScalar t) -> State
+    {
+        auto ot = cfg.rabiFreq * cfg.pulseWidth;
+        auto a = Scalar(0.5 * ot);
+        auto b = -a;
+        auto c = Scalar(0.5, 0.5 * cfg.detuning * cfg.pulseWidth);
+        auto z = Scalar(0.5 * Tanh(t / cfg.pulseWidth) + 0.5);
+
+        // We use analythic expression for the evolution matrix
+        auto evolutionMatrix = Observable
+        (
+            GaussHypergeometric(a, b, c, z),
+            GaussHypergeometric(a + Scalar(1) - c, b + Scalar(1) - c , Scalar(2) - c, z),
+            (Scalar(0, 2) * a * b) / (c * ot) * Sqrt(z * (Scalar(1) - z)) * GaussHypergeometric(a + Scalar(1), b + Scalar(1), c + Scalar(1), z),
+            Exp(Ln(z) * (Scalar(1) - c)) * Sqrt(Scalar(1) - z) * GaussHypergeometric(a + Scalar(1) - c, b + Scalar(1) - c, Scalar(1) - c, z)
+        );
+
+        return evolutionMatrix * cfg.initialState;
+    }
+
     auto HasNewSolution() -> Bool
     {
         ScopedLock<Mutex> lock(solutionMutex);

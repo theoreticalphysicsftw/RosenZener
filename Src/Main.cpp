@@ -28,7 +28,9 @@ static constexpr Color4 cDarkBackground = Color4(0, 0, 0, 1);
 
 static Bool gIsLightTheme = false;
 
-static Atomic<Bool> gColorChanged = false;
+static Atomic<Bool> gReplotNeeded = false;
+static Atomic<Bool> gPlotAnalythic = false;
+
 
 RZSimulator<F64> gSimulator
 (
@@ -80,7 +82,7 @@ Void GuiAccumulator()
 
         if (ImGui::Checkbox("Light theme", &gIsLightTheme))
         {
-            gColorChanged = true;
+            gReplotNeeded = true;
         }
         if (gIsLightTheme)
         {
@@ -110,6 +112,13 @@ Void GuiAccumulator()
         ImGui::InputDouble("t\xE2\x82\x80 - start time", &cfg.timeStart, 0.1);
         ImGui::InputDouble("t\xE2\x82\x81 - end time", &cfg.timeEnd, 0.1);
         ImGui::PopItemWidth();
+
+        static Bool analythicModel = gPlotAnalythic.Load();
+        if (ImGui::Checkbox("Use analythic model", &analythicModel))
+        {
+            gPlotAnalythic = analythicModel;
+            gReplotNeeded = true;
+        }
 
         if (ImGui::Button("Take screenshot"))
         {
@@ -156,11 +165,11 @@ Void GuiAccumulator()
     ImColor c1 = As<ImColor>(gE1Color.Load().operator Color4());
     if (ImGui::ColorEdit3("probability of measuring the first energy level", As<F32*>(&c0), ImGuiColorEditFlags_NoInputs))
     {
-        gColorChanged = true;
+        gReplotNeeded = true;
     }
     if (ImGui::ColorEdit3("probability of measuring the second energy level", As<F32*>(&c1), ImGuiColorEditFlags_NoInputs))
     {
-        gColorChanged = true;
+        gReplotNeeded = true;
     }
     gE0Color = ColorU32((U32)c0);
     gE1Color = ColorU32((U32)c1);
@@ -194,9 +203,9 @@ int main()
         {
             while (!Window::isClosed)
             {
-                if (gSimulator.HasNewSolution() || gColorChanged.Load())
+                if (gSimulator.HasNewSolution() || gReplotNeeded.Load())
                 {
-                    gColorChanged = false;
+                    gReplotNeeded = false;
                     auto solution = gSimulator.GetSolution();
                     gGraphRaw.Clear<U32>(gIsLightTheme? ColorU32(cLightBackground) : ColorU32(cDarkBackground));
                     SmoothPlot2D
@@ -208,7 +217,7 @@ int main()
                         Vector<F64, 2>(gSimulator.currentCfg.Load().timeEnd, 1),
                         [&](F64 t) -> F64
                         {
-                            auto val = gSimulator.GetSolutionAtTime(t);
+                            auto val = gPlotAnalythic.Load()? gSimulator.GetAnalythicSolutionAtTime(t) : gSimulator.GetSolutionAtTime(t);
                             auto probability = GetNorm(val[0]);
                             return probability;
                         },
@@ -224,7 +233,7 @@ int main()
                         Vector<F64, 2>(gSimulator.currentCfg.Load().timeEnd, 1),
                         [&](F64 t) -> F64
                         {
-                            auto val = gSimulator.GetSolutionAtTime(t);
+                            auto val = gPlotAnalythic.Load() ? gSimulator.GetAnalythicSolutionAtTime(t) : gSimulator.GetSolutionAtTime(t);
                             auto probability = GetNorm(val[1]);
                             return probability;
                         },
