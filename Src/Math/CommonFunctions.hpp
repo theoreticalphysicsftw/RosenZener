@@ -23,7 +23,11 @@
 
 #pragma once
 
+#include <Math/Algebra/Complex.hpp>
+#include <Math/Constants.hpp>
+
 #include <cmath>
+
 
 template <typename T>
 inline auto Sin(const T& x) -> T
@@ -80,7 +84,58 @@ inline auto Pow(const T& x, T n) -> T
 }
 
 template <typename T>
+inline auto Exp(const T& x) -> T
+{
+    return std::exp(x);
+}
+
+template <typename T>
+inline auto Ln(const T& x) -> T
+{
+    return std::log(x);
+}
+
+template <typename T>
 inline auto AreClose(T a, T b, T eps = 0.000001) -> Bool
 {
     return Abs(a - b) < eps;
+}
+
+
+template <typename T>
+inline auto LogGamma(const Complex<T>& z) -> Complex<T>
+{
+    static constexpr U32 maxIterations = 8;
+    auto r = -Complex<T>(Constants<T>::EulerMascheroni) * z - Ln(z);
+
+    for (auto i = 1u; i <= maxIterations; ++i)
+    {
+        auto zi = z / Complex<T>(i);
+        r += zi - Ln(Complex<T>(1) + zi);
+    }
+
+    return r;
+}
+
+template <typename T>
+inline auto LogPochhammer(const Complex<T>& z, const Complex<T>& n) -> Complex<T>
+{
+    return LogGamma(z + n) - LogGamma(z);
+}
+
+template <typename T>
+inline auto GaussHypergeometric(const Complex<T>& a, const Complex<T>& b, const Complex<T>& c, const Complex<T>& z) -> Complex<T>
+{
+    static constexpr U32 maxIterations = 8;
+    auto r = Complex<T>(1);
+
+    auto zi = z;
+    for (auto i = 1; i <= maxIterations; ++i)
+    {
+        auto abc = Exp(LogPochhammer(a, Complex<T>(i)) + LogPochhammer(b, Complex<T>(i)) - LogPochhammer(c, Complex<T>(i)));
+        r += abc * zi;
+        zi *= z / Complex<T>(i);
+    }
+
+    return r;
 }
