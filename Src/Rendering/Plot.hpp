@@ -65,8 +65,8 @@ inline auto SmoothPlot2D
     T widthPixel
 ) -> Void
 {
-    static constexpr U32 consecutiveSubdivsTreshold = 32;
-    static constexpr T flatnessThreshold = 0.99998;
+    static constexpr U32 consecutiveSubdivsTreshold = 16;
+    static constexpr T flatnessThreshold = 0.998;
     
     U32 initialTesselation = dest.width;
 
