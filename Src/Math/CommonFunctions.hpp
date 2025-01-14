@@ -101,11 +101,10 @@ inline auto AreClose(T a, T b, T eps = 0.000001) -> Bool
     return Abs(a - b) < eps;
 }
 
-
 template <typename T>
 inline auto LogGamma(const Complex<T>& z) -> Complex<T>
 {
-    static constexpr U32 maxIterations = 8;
+    static constexpr U32 maxIterations = 16;
     auto r = -Complex<T>(Constants<T>::EulerMascheroni) * z - Ln(z);
 
     for (auto i = 1u; i <= maxIterations; ++i)
@@ -126,16 +125,16 @@ inline auto LogPochhammer(const Complex<T>& z, const Complex<T>& n) -> Complex<T
 template <typename T>
 inline auto GaussHypergeometric(const Complex<T>& a, const Complex<T>& b, const Complex<T>& c, const Complex<T>& z) -> Complex<T>
 {
-    static constexpr U32 maxIterations = 8;
-    auto r = Complex<T>(1);
+    static constexpr U32 maxIterations = 64;
+    auto term = a * b / c * z;
+    auto sum = Complex<T>(1) + term;
 
-    auto zi = z;
-    for (auto i = 1; i <= maxIterations; ++i)
+    for (auto i = 2; i <= maxIterations; ++i)
     {
-        auto abc = Exp(LogPochhammer(a, Complex<T>(i)) + LogPochhammer(b, Complex<T>(i)) - LogPochhammer(c, Complex<T>(i)));
-        r += abc * zi;
-        zi *= z / Complex<T>(i);
+        auto cim1 = Complex<T>(i - 1);
+        term *= (a + cim1) * (b + cim1) / (c + cim1) * z / Complex<T>(i);
+        sum += term;
     }
 
-    return r;
+    return sum;
 }
