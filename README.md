@@ -1,4 +1,4 @@
-# Simple Rosen Zener two state quantum system simulator
+# Simple Rosen Zener two level quantum system simulator
 https://github.com/user-attachments/assets/f6935e9b-f9e0-40fc-8548-82afc3a7b3cd
 
 ## Building
