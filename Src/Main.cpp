@@ -23,7 +23,7 @@ RawCPUImage gGraphRaw;
 static Atomic<ColorU32> gE0Color = ColorU32(0xFFFFFF00);
 static Atomic<ColorU32> gE1Color = ColorU32(0xFFFF00FF);
 
-static constexpr Color4 cLightBackground = Color4(1, 1, 1, 1);
+static constexpr Color4 cLightBackground = Color4(1, 252.f/255.f, 249.f/255.f, 1);
 static constexpr Color4 cDarkBackground = Color4(0, 0, 0, 1);
 
 static Bool gIsLightTheme = false;
