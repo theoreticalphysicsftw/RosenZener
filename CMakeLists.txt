@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.10) 
+cmake_minimum_required(VERSION 3.20) 
+cmake_policy(SET CMP0091 NEW)
 
 project(RosenZener)
 enable_language(CXX)
+enable_language(C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -33,3 +35,10 @@ add_subdirectory("${RZ_EXTERN_DIR}/LibWebp")
 target_link_libraries(${PROJECT_NAME} ImGUI)
 target_link_libraries(${PROJECT_NAME} SDLStatic)
 target_link_libraries(${PROJECT_NAME} LibWebp)
+
+if (CMAKE_HOST_WIN32)
+set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY  "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET ImGUI PROPERTY MSVC_RUNTIME_LIBRARY  "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET LibWebp PROPERTY MSVC_RUNTIME_LIBRARY  "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET SDL3-static PROPERTY MSVC_RUNTIME_LIBRARY  "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
